@@ -390,7 +390,7 @@ export default function DashboardPage() {
                             <div className="relative isolate h-full flex items-end justify-between gap-2 min-w-[720px] xl:min-w-0">
                                 {/* Subtle horizontal grid lines */}
                                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8">
-                                    {[0,1,2,3,4].map(i => (
+                                    {[0, 1, 2, 3, 4].map(i => (
                                         <div key={i} className="w-full h-px bg-slate-800/50" />
                                     ))}
                                 </div>
@@ -542,17 +542,16 @@ export default function DashboardPage() {
                                         className="relative group overflow-hidden bg-gradient-to-r from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-4 flex items-center transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:-translate-y-0.5"
                                     >
                                         {/* Left colored glowing strip */}
-                                        <div 
-                                            className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r-full opacity-60 group-hover:opacity-100 transition-all duration-300 ${
-                                                t.category_type === "income" 
-                                                    ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" 
+                                        <div
+                                            className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r-full opacity-60 group-hover:opacity-100 transition-all duration-300 ${t.category_type === "income"
+                                                    ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
                                                     : "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.8)]"
-                                            }`}
+                                                }`}
                                         />
 
                                         {/* Icon with radial glow */}
                                         <div className="relative mr-4 pl-1 select-none">
-                                            <div 
+                                            <div
                                                 className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300"
                                                 style={{ backgroundColor: t.category_color }}
                                             />
@@ -585,15 +584,14 @@ export default function DashboardPage() {
 
                                         {/* Value & Date */}
                                         <div className="text-right flex flex-col justify-between h-full min-h-[3.2rem]">
-                                             <div className={`font-sans tabular-nums flex items-baseline gap-0.5 text-base transition-all duration-300 ${
-                                                 t.category_type === "income"
-                                                     ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-emerald-300"
-                                                     : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
-                                             }`}>
-                                                 <span className="text-xs font-semibold opacity-85 mr-0.5">{t.category_type === "income" ? "+" : "-"}</span>
-                                                 <span className="text-base font-black tracking-tight">{Number(t.amount).toLocaleString("vi-VN")}</span>
-                                                 <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>
-                                             </div>
+                                            <div className={`font-sans tabular-nums flex items-baseline gap-0.5 text-base transition-all duration-300 ${t.category_type === "income"
+                                                    ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-emerald-300"
+                                                    : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
+                                                }`}>
+                                                <span className="text-xs font-semibold opacity-85 mr-0.5">{t.category_type === "income" ? "+" : "-"}</span>
+                                                <span className="text-base font-black tracking-tight">{Number(t.amount).toLocaleString("vi-VN")}</span>
+                                                <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>
+                                            </div>
                                             <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1 justify-end font-medium group-hover:text-slate-400 transition-colors duration-200">
                                                 <svg className="w-3 h-3 text-slate-600 group-hover:text-slate-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -639,24 +637,21 @@ export default function DashboardPage() {
                                         className="group relative flex items-center justify-between p-3.5 rounded-2xl border border-slate-800/60 bg-slate-950/30 hover:bg-slate-900/50 hover:border-slate-700/80 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.4)] overflow-hidden"
                                     >
                                         {/* Hover glow accent */}
-                                        <div className={`absolute left-0 top-0 h-full w-0.5 rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-300 ${
-                                            isPositive ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]"
-                                        }`} />
+                                        <div className={`absolute left-0 top-0 h-full w-0.5 rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-300 ${isPositive ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]"
+                                            }`} />
 
                                         <div className="flex items-center gap-3">
                                             {/* Icon with radial glow */}
                                             <div className="relative select-none">
                                                 <div
-                                                    className={`absolute inset-0 rounded-xl blur-md opacity-0 group-hover:opacity-30 transition-all duration-300 ${
-                                                        isPositive ? "bg-emerald-400" : "bg-rose-400"
-                                                    }`}
+                                                    className={`absolute inset-0 rounded-xl blur-md opacity-0 group-hover:opacity-30 transition-all duration-300 ${isPositive ? "bg-emerald-400" : "bg-rose-400"
+                                                        }`}
                                                 />
                                                 <div
-                                                    className={`relative w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-105 border ${
-                                                        isPositive
+                                                    className={`relative w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-105 border ${isPositive
                                                             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20"
                                                             : "bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {wallet.icon}
                                                 </div>
@@ -672,9 +667,8 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
 
-                                        <div className={`font-sans tabular-nums flex items-baseline gap-0.5 ${
-                                            isPositive ? "text-emerald-400" : "text-rose-400"
-                                        }`}>
+                                        <div className={`font-sans tabular-nums flex items-baseline gap-0.5 ${isPositive ? "text-emerald-400" : "text-rose-400"
+                                            }`}>
                                             <span className="text-xs font-semibold opacity-85 mr-0.5">{isPositive ? "+" : "-"}</span>
                                             <span className="text-base font-black tracking-tight">{Math.abs(walletBalance).toLocaleString("vi-VN")}</span>
                                             <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>

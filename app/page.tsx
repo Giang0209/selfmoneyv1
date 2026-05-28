@@ -15,7 +15,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black overflow-x-hidden relative" style={{ backgroundColor: '#0B0F19' }}>
       {/* Background Decorative Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute top-[30%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none" />
@@ -55,22 +55,20 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <>
-              <Link
-                href="/login"
-                className="text-slate-300 hover:text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                Đăng nhập
-              </Link>
+            <Link
+              href="/login"
+              className="bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              Đăng nhập
+            </Link>
 
-              <Link
-                href="/register"
-                className="relative group overflow-hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 font-semibold text-white text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300"
-              >
-                <span className="relative z-10">Bắt đầu ngay</span>
-                <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Link>
-            </>
+            <Link
+              href="/register"
+              className="relative group overflow-hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 font-semibold text-white text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300"
+            >
+              <span className="relative z-10">Bắt đầu ngay</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </Link>
           </div>
         </div>
       </header>
@@ -113,12 +111,7 @@ export default function Home() {
                 Đăng ký miễn phí
               </Link>
             )}
-            <a
-              href="#mockup"
-              className="px-8 py-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-bold text-center hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-            >
-              Khám phá giao diện
-            </a>
+            <a href="#mockup" className="px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-center transition-all duration-300">Khám phá giao diện</a>
           </div>
 
           {/* Quick Stats */}

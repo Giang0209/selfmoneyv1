@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { useLanguage } from "@/lib/LanguageContext";
 
 type Wallet = {
     id: number;
@@ -26,6 +27,7 @@ type WalletForm = {
 export default function WalletsPage() {
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [loading, setLoading] = useState(true);
+    const { t, language } = useLanguage();
 
     const [open, setOpen] = useState(false);
 
@@ -91,17 +93,17 @@ export default function WalletsPage() {
     const getWalletType = (icon: string) => {
         switch (icon) {
             case "🏦":
-                return "Ngân hàng";
+                return t("wallets.type_bank");
             case "💵":
-                return "Tiền mặt";
+                return t("wallets.type_cash");
             case "💳":
-                return "Thẻ tín dụng";
+                return t("wallets.type_credit");
             case "📱":
-                return "Tài khoản điện tử";
+                return t("wallets.type_e_wallet");
             case "🪙":
-                return "Tiết kiệm";
+                return t("wallets.type_savings");
             default:
-                return "Tài khoản cá nhân";
+                return t("wallets.type_personal");
         }
     };
 
@@ -113,7 +115,7 @@ export default function WalletsPage() {
             const token = localStorage.getItem("token");
 
             if (!form.name || !form.balance) {
-                alert("Vui lòng nhập đầy đủ thông tin");
+                alert(language === "vi" ? "Vui lòng nhập đầy đủ thông tin" : "Please fill in all information");
                 return;
             }
 
@@ -134,11 +136,11 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || "Tạo tài khoản thất bại");
+                alert(data.message || (language === "vi" ? "Tạo tài khoản thất bại" : "Failed to create account"));
                 return;
             }
 
-            alert("Tạo tài khoản thành công");
+            alert(language === "vi" ? "Tạo tài khoản thành công" : "Account created successfully");
 
             setOpen(false);
             resetForm();
@@ -146,7 +148,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert("Lỗi tạo tài khoản");
+            alert(language === "vi" ? "Lỗi tạo tài khoản" : "Error creating account");
         }
     };
 
@@ -157,7 +159,7 @@ export default function WalletsPage() {
         try {
             const token = localStorage.getItem("token");
 
-            const ok = confirm("Bạn có chắc muốn xoá tài khoản này?");
+            const ok = confirm(t("wallets.confirm_delete"));
             if (!ok) return;
 
             const res = await fetch(`/api/wallets/${id}`, {
@@ -170,16 +172,16 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || "Xoá thất bại");
+                alert(data.message || (language === "vi" ? "Xoá thất bại" : "Delete failed"));
                 return;
             }
 
             setWallets((prev) => prev.filter((w) => w.id !== id));
 
-            alert("Xoá tài khoản thành công");
+            alert(language === "vi" ? "Xoá tài khoản thành công" : "Account deleted successfully");
         } catch (err) {
             console.error(err);
-            alert("Lỗi xoá tài khoản");
+            alert(language === "vi" ? "Lỗi xoá tài khoản" : "Error deleting account");
         }
     };
 
@@ -242,11 +244,11 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || "Cập nhật thất bại");
+                alert(data.message || (language === "vi" ? "Cập nhật thất bại" : "Update failed"));
                 return;
             }
 
-            alert("Cập nhật số dư thành công");
+            alert(language === "vi" ? "Cập nhật số dư thành công" : "Balance updated successfully");
 
             setOpen(false);
             setMode("create");
@@ -255,7 +257,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert("Lỗi cập nhật tài khoản");
+            alert(language === "vi" ? "Lỗi cập nhật tài khoản" : "Error updating account");
         }
     };
 
@@ -280,7 +282,7 @@ export default function WalletsPage() {
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-3xl font-black bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
-                                Tài khoản
+                                {t('wallets.title')}
                             </h1>
                             <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-cyan-500/20 tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
                                 Tài khoản
@@ -288,7 +290,7 @@ export default function WalletsPage() {
                         </div>
 
                         <p className="text-xs text-slate-500 mt-1.5 font-medium tracking-wide">
-                            Quản lý các tài khoản và số dư của bạn một cách trực quan
+                            {t('wallets.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -300,7 +302,7 @@ export default function WalletsPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Tìm kiếm tài khoản..."
+                        placeholder={t('wallets.search_placeholder')}
                         className="w-full md:w-80 bg-slate-950/70 border border-slate-800/80 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-500 transition-all duration-300 shadow-inner"
                     />
 
@@ -310,7 +312,7 @@ export default function WalletsPage() {
                         className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/10 flex items-center gap-2"
                     >
                         <span className="text-lg leading-none font-black">+</span>
-                        Tài khoản mới
+                        {t('wallets.new_account')}
                     </button>
 
                 </div>
@@ -325,7 +327,7 @@ export default function WalletsPage() {
                                 💰
                             </div>
                             <span className="uppercase text-xs font-bold tracking-wider text-slate-300">
-                                Tổng tài sản
+                                {t('wallets.total_assets')}
                             </span>
                         </div>
 
@@ -378,7 +380,7 @@ export default function WalletsPage() {
                                         </div>
 
                                         <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-slate-950/40 px-2 py-1 rounded-md border border-slate-900/60">
-                                            {new Date(wallet.created_at).toLocaleDateString("vi-VN")}
+                                            {new Date(wallet.created_at).toLocaleDateString(language === "vi" ? "vi-VN" : "en-US")}
                                         </span>
                                     </div>
 
@@ -407,14 +409,14 @@ export default function WalletsPage() {
 
                                     <div className="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center h-8">
                                         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold group-hover:text-slate-400 transition-colors">
-                                            Tài khoản
+                                            {t('dashboard.account')}
                                         </span>
                                         {/* Slide-in and fade-in Actions with Custom Premium SVGs */}
                                         <div className="flex gap-2 opacity-0 translate-x-3 scale-95 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100 transition-all duration-350 origin-right">
                                             <button
                                                 onClick={() => openEdit(wallet)}
                                                 className="text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title="Sửa tài khoản"
+                                                title={t('wallets.edit_btn')}
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -424,7 +426,7 @@ export default function WalletsPage() {
                                             <button
                                                 onClick={() => handleDeleteWallet(wallet.id)}
                                                 className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title="Xóa tài khoản"
+                                                title={t('wallets.delete_btn')}
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -453,11 +455,11 @@ export default function WalletsPage() {
                             </div>
 
                             <p className="font-bold text-slate-200 group-hover:text-white transition-colors duration-250 text-base">
-                                Thêm tài khoản mới
+                                {t('wallets.add_new')}
                             </p>
 
                             <p className="text-xs text-slate-500 mt-1.5 text-center max-w-[200px] leading-relaxed group-hover:text-slate-400 transition-colors duration-250">
-                                Tạo tài khoản mới để theo dõi tài sản
+                                {t('wallets.add_new_desc')}
                             </p>
                         </button>
 
@@ -477,13 +479,13 @@ export default function WalletsPage() {
                         <div className="px-6 py-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/20">
                             <div>
                                 <h3 className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                    {mode === "create" ? "Tạo tài khoản mới" : "Cập nhật tài khoản"}
+                                    {mode === "create" ? t('wallets.modal_add_title') : t('wallets.modal_edit_title')}
                                 </h3>
 
                                 <p className="text-xs text-slate-400 mt-1">
                                     {mode === "create"
-                                        ? "Thêm tài khoản để quản lý tài chính cá nhân"
-                                        : "Chỉnh sửa thông tin tài khoản hiện tại"}
+                                        ? t('wallets.modal_add_sub')
+                                        : t('wallets.modal_edit_sub')}
                                 </p>
                             </div>
 
@@ -501,7 +503,7 @@ export default function WalletsPage() {
                             {/* Tên ví */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    Tên tài khoản
+                                    {t('wallets.name_label')}
                                 </label>
 
                                 <input
@@ -510,7 +512,7 @@ export default function WalletsPage() {
                                     onChange={(e) =>
                                         setForm({ ...form, name: e.target.value })
                                     }
-                                    placeholder="Tài khoản MB Bank"
+                                    placeholder={t('wallets.name_placeholder')}
                                     className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                                 />
                             </div>
@@ -518,7 +520,7 @@ export default function WalletsPage() {
                             {/* Số dư */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    Số dư ban đầu
+                                    {t('wallets.balance_label')}
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-xl blur-sm" />
@@ -540,7 +542,7 @@ export default function WalletsPage() {
                             {/* Chọn icon */}
                             <div>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    Chọn icon
+                                    {t('wallets.icon_label')}
                                 </p>
 
                                 <div className="grid grid-cols-5 gap-3">
@@ -567,7 +569,7 @@ export default function WalletsPage() {
                             {/* Màu sắc ví */}
                             <div>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    Màu sắc tài khoản
+                                    {t('wallets.color_label')}
                                 </p>
 
                                 <div className="flex gap-3 flex-wrap">
@@ -603,7 +605,7 @@ export default function WalletsPage() {
                                 onClick={() => setOpen(false)}
                                 className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-800 text-slate-300 font-medium transition-all duration-200 active:scale-95"
                             >
-                                Hủy
+                                {t('wallets.cancel')}
                             </button>
 
                             <button
@@ -614,7 +616,7 @@ export default function WalletsPage() {
                                 }
                                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/20"
                             >
-                                Lưu tài khoản
+                                {t('wallets.save')}
                             </button>
 
                         </div>

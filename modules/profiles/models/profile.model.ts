@@ -2,7 +2,7 @@
 
 import pool from "@/lib/db";
 
-// Get profile
+// Truy vấn thông tin chi tiết hồ sơ cá nhân của người dùng (trừ mật khẩu)
 export const getProfileById =
     async (user_id: number) => {
 
@@ -14,7 +14,7 @@ export const getProfileById =
                 username,
                 name,
                 avatar,
-                dob::text,
+                dob::text, -- Ép kiểu ngày sinh sang chuỗi văn bản để hiển thị dạng YYYY-MM-DD
                 gender,
                 created_at
 
@@ -28,7 +28,7 @@ export const getProfileById =
         return result.rows[0];
     };
 
-// Get password hash
+// Lấy mã băm mật khẩu của người dùng dựa theo ID (phục vụ đối chiếu khi đổi mật khẩu)
 export const getPasswordByUserId =
     async (
         user_id: number
@@ -48,7 +48,7 @@ export const getPasswordByUserId =
         return result.rows[0];
     };
 
-// Update profile
+// Cập nhật thông tin chi tiết hồ sơ cá nhân
 export const updateProfile = async ({
     user_id,
     name,
@@ -75,7 +75,7 @@ export const updateProfile = async ({
         UPDATE users
 
         SET
-            name = COALESCE($1, name),
+            name = COALESCE($1, name), -- Sử dụng giá trị mới nếu được truyền lên, ngược lại giữ nguyên giá trị cũ
 
             username = COALESCE($2, username),
 
@@ -110,7 +110,7 @@ export const updateProfile = async ({
     return result.rows[0];
 };
 
-// Update password
+// Cập nhật mã băm mật khẩu mới cho người dùng
 export const updatePassword =
     async ({
         user_id,
@@ -134,4 +134,4 @@ export const updatePassword =
                 user_id,
             ]
         );
-    };
+    };

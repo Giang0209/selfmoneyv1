@@ -2,7 +2,7 @@
 
 import pool from "@/lib/db";
 
-// Create category
+// Tạo mới danh mục trong database
 export const createCategory = async ({
     user_id,
     name,
@@ -47,7 +47,7 @@ export const createCategory = async ({
     return result.rows[0];
 };
 
-// Get categories by user
+// Lấy toàn bộ danh mục của người dùng kèm tổng số tiền đã giao dịch (Aggregation LEFT JOIN)
 export const getCategoriesByUserId =
     async (
         user_id: number
@@ -84,7 +84,7 @@ export const getCategoriesByUserId =
         return result.rows;
     };
 
-// Find category by color
+// Tìm danh mục trùng màu trong cùng một phân loại (để tối ưu thiết kế biểu đồ của người dùng)
 export const findCategoryByColor = async ({
     user_id,
     type,
@@ -111,7 +111,7 @@ export const findCategoryByColor = async ({
     return result.rows[0];
 };
 
-// Find category by id
+// Tìm kiếm danh mục dựa theo ID
 export const findCategoryById =
     async (
         category_id: number
@@ -131,7 +131,7 @@ export const findCategoryById =
         return result.rows[0];
     };
 
-// Find category by name
+// Tìm kiếm danh mục của người dùng theo tên
 export const findCategoryByName =
     async ({
         user_id,
@@ -165,7 +165,7 @@ export const findCategoryByName =
     };
 
 
-// Soft delete category
+// Xóa mềm danh mục bằng cách cập nhật deleted_at
 export const softDeleteCategory =
     async (
         category_id: number
@@ -181,4 +181,4 @@ export const softDeleteCategory =
             `,
             [category_id]
         );
-    };
+    };

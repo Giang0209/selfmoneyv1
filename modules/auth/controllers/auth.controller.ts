@@ -5,15 +5,16 @@ import {
     registerService,
 } from "../services/auth.service";
 
-// Register
+// Controller xử lý yêu cầu đăng ký tài khoản (Register API)
 export const registerController =
     async (req: Request) => {
 
         try {
-
+            // Giải nén body JSON từ yêu cầu gửi lên
             const body =
                 await req.json();
 
+            // Thực hiện gọi service xử lý đăng ký
             const data =
                 await registerService({
                     phone:
@@ -38,6 +39,7 @@ export const registerController =
                         body.gender,
                 });
 
+            // Trả về kết quả thành công dưới dạng JSON với trạng thái 201 Created
             return Response.json(
                 {
                     message:
@@ -51,7 +53,7 @@ export const registerController =
             );
 
         } catch (error: any) {
-
+            // Trả về thông báo lỗi với trạng thái 400 Bad Request nếu có lỗi phát sinh
             return Response.json(
                 {
                     message:
@@ -64,15 +66,16 @@ export const registerController =
         }
     };
 
-// Login
+// Controller xử lý yêu cầu đăng nhập tài khoản (Login API)
 export const loginController =
     async (req: Request) => {
 
         try {
-
+            // Giải nén body JSON chứa thông tin đăng nhập
             const body =
                 await req.json();
 
+            // Thực hiện gọi service xử lý kiểm tra thông tin đăng nhập
             const data =
                 await loginService({
                     phone:
@@ -82,6 +85,7 @@ export const loginController =
                         body.password,
                 });
 
+            // Trả về dữ liệu kết quả và mã JWT Token nếu thành công
             return Response.json({
                 message:
                     "Đăng nhập thành công",
@@ -90,7 +94,7 @@ export const loginController =
             });
 
         } catch (error: any) {
-
+            // Trả về thông báo lỗi nếu mật khẩu sai hoặc tài khoản không tồn tại
             return Response.json(
                 {
                     message:
@@ -101,4 +105,4 @@ export const loginController =
                 }
             );
         }
-    };
+    };

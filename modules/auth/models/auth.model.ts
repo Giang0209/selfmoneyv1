@@ -2,7 +2,7 @@
 
 import pool from "@/lib/db";
 
-// Create user
+// Thêm bản ghi người dùng mới vào cơ sở dữ liệu
 export const createUser = async ({
     phone,
     username,
@@ -65,7 +65,7 @@ export const createUser = async ({
     return result.rows[0];
 };
 
-// Find user by phone
+// Tìm kiếm người dùng dựa trên số điện thoại (dùng để đăng nhập hoặc kiểm tra trùng lặp)
 export const findUserByPhone =
     async (phone: string) => {
 
@@ -83,7 +83,7 @@ export const findUserByPhone =
         return result.rows[0];
     };
 
-// Find user by id
+// Tìm kiếm người dùng dựa trên ID định danh (dùng để xác thực middleware và xem hồ sơ)
 export const findUserById =
     async (user_id: number) => {
 
@@ -107,4 +107,4 @@ export const findUserById =
         );
 
         return result.rows[0];
-    };
+    };

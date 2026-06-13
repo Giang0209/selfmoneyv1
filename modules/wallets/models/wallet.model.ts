@@ -1,8 +1,9 @@
 // src/modules/wallets/models/wallet.model.ts
+// Tầng Model - truy vấn SQL cho bảng wallets
 
 import pool from "@/lib/db";
 
-// Create wallet
+// Tạo ví mới, nếu trùng tên sẽ bắn lỗi duplicate
 export const createWallet = async ({
     user_id,
     name,
@@ -30,7 +31,7 @@ export const createWallet = async ({
             [
                 user_id,
                 name,
-                balance || 0,
+                balance || 0, // Mặc định số dư là 0
                 icon || null,
             ]
         );
@@ -39,7 +40,7 @@ export const createWallet = async ({
 
     } catch (err: any) {
 
-        // PostgreSQL duplicate key error
+        // Lỗi trùng khoá PostgreSQL (tên ví đã tồn tại)
         if (err.code === "23505") {
             throw new Error("Tên ví đã tồn tại");
         }
@@ -48,7 +49,7 @@ export const createWallet = async ({
     }
 };
 
-// Get wallets by user
+// Lấy danh sách ví của người dùng (bỏ qua ví đã xoá mềm)
 export const getWalletsByUserId = async (
     user_id: number
 ) => {
@@ -69,7 +70,7 @@ export const getWalletsByUserId = async (
     return result.rows;
 };
 
-// Find wallet by id
+// Tìm ví theo ID và user_id (đảm bảo quyền sở hữu)
 export const findWalletById = async ({
     wallet_id,
     user_id,
@@ -96,7 +97,7 @@ export const findWalletById = async ({
     return result.rows[0];
 };
 
-// Update wallet
+// Cập nhật số dư ví (dùng COALESCE giữ nguyên nếu không truyền)
 export const updateWallet = async ({
     wallet_id,
     balance,
@@ -125,7 +126,7 @@ export const updateWallet = async ({
     return result.rows[0];
 };
 
-// Soft delete wallet
+// Xoá mềm ví (đánh dấu deleted_at thay vì xoá vĩnh viễn)
 export const deleteWallet = async (
     wallet_id: number
 ) => {

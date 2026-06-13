@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useTheme } from "@/lib/ThemeContext";
-import { useLanguage } from "@/lib/LanguageContext";
 
 type Profile = {
     name: string;
@@ -18,7 +17,7 @@ type Profile = {
 
 export default function ProfilePage() {
     const { theme, setTheme } = useTheme();
-    const { language, setLanguage, t } = useLanguage();
+
 
     const fileInputRef =
         useRef<HTMLInputElement | null>(null);
@@ -78,7 +77,7 @@ export default function ProfilePage() {
                 });
 
             if (!res.ok) {
-                alert(t("profile.fetch_failed"));
+                alert("Không lấy được profile");
                 return;
             }
 
@@ -167,7 +166,7 @@ export default function ProfilePage() {
                 );
 
                 alert(
-                    t("profile.avatar_upload_failed")
+                    "Upload avatar thất bại"
                 );
             }
         };
@@ -211,7 +210,7 @@ export default function ProfilePage() {
                 }
 
                 alert(
-                    t("profile.save_success")
+                    "Cập nhật thông tin thành công"
                 );
 
                 fetchProfile();
@@ -221,7 +220,7 @@ export default function ProfilePage() {
                 console.error(error);
 
                 alert(
-                    t("profile.error_update")
+                    "Lỗi cập nhật profile"
                 );
             }
         };
@@ -236,7 +235,7 @@ export default function ProfilePage() {
                 confirmPassword
             ) {
                 alert(
-                    t("profile.psw_mismatch")
+                    "Mật khẩu xác nhận không khớp"
                 );
                 return;
             }
@@ -279,7 +278,7 @@ export default function ProfilePage() {
                 }
 
                 alert(
-                    t("profile.psw_success")
+                    "Đổi mật khẩu thành công"
                 );
 
                 setCurrentPassword("");
@@ -291,7 +290,7 @@ export default function ProfilePage() {
                 console.error(error);
 
                 alert(
-                    t("profile.error_change_psw")
+                    "Lỗi đổi mật khẩu"
                 );
             }
         };
@@ -313,7 +312,7 @@ export default function ProfilePage() {
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-3xl font-black bg-gradient-to-r from-text-primary via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
-                                {t("profile.title")}
+                                Hồ sơ cá nhân
                             </h1>
                             <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-cyan-500/20 tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
                                 Profile
@@ -321,7 +320,7 @@ export default function ProfilePage() {
                         </div>
 
                         <p className="text-xs text-slate-500 mt-1.5 font-medium tracking-wide">
-                            {t("profile.subtitle")}
+                            Quản lý thông tin tài khoản và bảo mật hệ thống
                         </p>
                     </div>
                 </div>
@@ -337,11 +336,11 @@ export default function ProfilePage() {
 
                             <div>
                                 <h2 className="text-xl font-black bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent">
-                                    {t("profile.info_section")}
+                                    Thông tin cá nhân
                                 </h2>
 
                                 <p className="text-xs text-slate-500 mt-0.5">
-                                    {t("profile.info_section_desc")}
+                                    Cập nhật các thông tin cơ bản của bạn
                                 </p>
                             </div>
                         </div>
@@ -389,7 +388,7 @@ export default function ProfilePage() {
                             {/* NAME */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t("profile.name_label")}
+                                    Họ và tên
                                 </label>
 
                                 <div className="relative">
@@ -413,7 +412,7 @@ export default function ProfilePage() {
                             {/* USERNAME */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t("profile.username_label")}
+                                    Tên đăng nhập
                                 </label>
 
                                 <div className="relative opacity-65">
@@ -436,7 +435,7 @@ export default function ProfilePage() {
                             {/* PHONE */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t("profile.phone_label")}
+                                    Số điện thoại
                                 </label>
 
                                 <div className="relative opacity-65">
@@ -459,7 +458,7 @@ export default function ProfilePage() {
                             {/* BIRTHDAY */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t("profile.birthday_label")}
+                                    Ngày sinh
                                 </label>
 
                                 <div className="relative">
@@ -483,7 +482,7 @@ export default function ProfilePage() {
                             {/* GENDER */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t("profile.gender_label")}
+                                    Giới tính
                                 </label>
 
                                 <div className="grid grid-cols-3 gap-3">
@@ -497,7 +496,7 @@ export default function ProfilePage() {
                                             : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
                                             }`}
                                     >
-                                        👨 {t("profile.gender_male")}
+                                        👨 Nam
                                     </button>
 
                                     <button
@@ -510,7 +509,7 @@ export default function ProfilePage() {
                                             : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
                                             }`}
                                     >
-                                        👩 {t("profile.gender_female")}
+                                        👩 Nữ
                                     </button>
 
                                     <button
@@ -523,7 +522,7 @@ export default function ProfilePage() {
                                             : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
                                             }`}
                                     >
-                                        🌈 {t("profile.gender_other")}
+                                        🌈 Khác
                                     </button>
                                 </div>
                             </div>
@@ -532,7 +531,7 @@ export default function ProfilePage() {
                                 type="submit"
                                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/20 cursor-pointer"
                             >
-                                {t("profile.save_btn")}
+                                Lưu thông tin cá nhân
                             </button>
 
                         </form>
@@ -550,11 +549,11 @@ export default function ProfilePage() {
 
                                 <div>
                                     <h2 className="text-xl font-black bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent">
-                                        {t("profile.password_section")}
+                                        Đổi mật khẩu
                                     </h2>
 
                                     <p className="text-xs text-slate-500 mt-0.5">
-                                        {t("profile.password_section_desc")}
+                                        Giữ tài khoản của bạn được bảo mật tuyệt đối
                                     </p>
                                 </div>
                             </div>
@@ -567,7 +566,7 @@ export default function ProfilePage() {
                                 {/* CURRENT PASSWORD */}
                                 <div>
                                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                        {t("profile.current_password")}
+                                        Mật khẩu hiện tại
                                     </label>
 
                                     <div className="relative">
@@ -612,7 +611,7 @@ export default function ProfilePage() {
                                 {/* NEW PASSWORD */}
                                 <div>
                                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                        {t("profile.new_password")}
+                                        Mật khẩu mới
                                     </label>
 
                                     <div className="relative">
@@ -657,7 +656,7 @@ export default function ProfilePage() {
                                 {/* CONFIRM PASSWORD */}
                                 <div>
                                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                        {t("profile.confirm_password")}
+                                        Xác nhận mật khẩu
                                     </label>
 
                                     <div className="relative">
@@ -703,7 +702,7 @@ export default function ProfilePage() {
                                     type="submit"
                                     className="w-full py-3.5 rounded-xl border border-cyan-500/80 hover:bg-cyan-500/10 text-cyan-400 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 cursor-pointer"
                                 >
-                                    {t("profile.update_password_btn")}
+                                    Cập nhật mật khẩu
                                 </button>
 
                             </form>
@@ -718,11 +717,11 @@ export default function ProfilePage() {
 
                                 <div>
                                     <h2 className="text-xl font-black bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent">
-                                        {t("profile.settings_section")}
+                                        Cấu hình hệ thống
                                     </h2>
 
                                     <p className="text-xs text-slate-500 mt-0.5">
-                                        {t("profile.settings_section_desc")}
+                                        Tùy chỉnh giao diện hiển thị và ngôn ngữ hệ thống
                                     </p>
                                 </div>
                             </div>
@@ -731,7 +730,7 @@ export default function ProfilePage() {
                                 {/* THEME SELECTOR */}
                                 <div>
                                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                        {t("profile.theme_label")}
+                                        Giao diện
                                     </label>
 
                                     <div className="grid grid-cols-2 gap-4">
@@ -743,7 +742,7 @@ export default function ProfilePage() {
                                                 : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
                                                 }`}
                                         >
-                                            ☀️ {t("profile.theme_light")}
+                                            ☀️ Sáng
                                         </button>
 
                                         <button
@@ -754,38 +753,7 @@ export default function ProfilePage() {
                                                 : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
                                                 }`}
                                         >
-                                            🌙 {t("profile.theme_dark")}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* LANGUAGE SELECTOR */}
-                                <div>
-                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                        {t("profile.lang_label")}
-                                    </label>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setLanguage("vi")}
-                                            className={`py-3 rounded-xl border font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${language === "vi"
-                                                ? "border-red-500 bg-red-500/10 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
-                                                : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
-                                                }`}
-                                        >
-                                            🇻🇳 {t("profile.lang_vi")}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setLanguage("en")}
-                                            className={`py-3 rounded-xl border font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${language === "en"
-                                                ? "border-blue-500 bg-blue-500/10 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                                                : "border-card-border bg-input-bg text-slate-400 hover:bg-card-bg"
-                                                }`}
-                                        >
-                                            ENG {t("profile.lang_en")}
+                                            🌙 Tối
                                         </button>
                                     </div>
                                 </div>

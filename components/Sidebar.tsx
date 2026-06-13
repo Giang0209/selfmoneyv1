@@ -3,12 +3,10 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useSyncExternalStore, useEffect } from "react";
 import { SidebarStore } from "./SidebarStore";
-import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useLanguage();
   const isCollapsed = useSyncExternalStore(
     SidebarStore.subscribe,
     SidebarStore.getSnapshot,
@@ -24,13 +22,14 @@ export default function Sidebar() {
   }, [isCollapsed]);
 
   const menu = [
-    { href: "/dashboard", label: t("sidebar.dashboard") },
-    { href: "/transactions", label: t("sidebar.transactions") },
-    { href: "/wallets", label: t("sidebar.wallets") },
-    { href: "/budgets", label: t("sidebar.budgets") },
-    { href: "/categories", label: t("sidebar.categories") },
-    { href: "/analytics", label: t("sidebar.analytics") },
-    { href: "/profile", label: t("sidebar.profile") },
+    { href: "/dashboard", label: "Tổng quan" },
+    { href: "/transactions", label: "Giao dịch" },
+    { href: "/wallets", label: "Tài khoản" },
+    { href: "/budgets", label: "Ngân sách" },
+    { href: "/saving-goals", label: "Mục tiêu tiết kiệm" },
+    { href: "/categories", label: "Danh mục" },
+    { href: "/analytics", label: "Phân tích tài chính" },
+    { href: "/profile", label: "Hồ sơ cá nhân" },
   ];
 
   const handleLogout = () => {
@@ -48,6 +47,8 @@ export default function Sidebar() {
         return { color: "text-cyan-300", glow: "drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]" };
       case "/budgets":
         return { color: "text-emerald-300", glow: "drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" };
+      case "/saving-goals":
+        return { color: "text-violet-300", glow: "drop-shadow-[0_0_8px_rgba(167,139,250,0.6)]" };
       case "/categories":
         return { color: "text-orange-300", glow: "drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" };
       case "/analytics":
@@ -86,6 +87,14 @@ export default function Sidebar() {
         return (
           <svg className={iconClasses} fill="none" viewBox="0 0 24 24" stroke={strokeColor} strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case "/saving-goals":
+        return (
+          <svg className={iconClasses} fill="none" viewBox="0 0 24 24" stroke={strokeColor} strokeWidth="2">
+            <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="12" cy="12" r="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         );
       case "/categories":
@@ -131,7 +140,7 @@ export default function Sidebar() {
             Self Money
           </h1>
           <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 group-hover/logo:text-cyan-400/80 transition-colors whitespace-nowrap">
-            {t("sidebar.logo_sub")}
+            PHÂN TÍCH TÀI CHÍNH
           </p>
         </div>
       </div>
@@ -184,7 +193,7 @@ export default function Sidebar() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1" />
           </svg>
           <div className={`overflow-hidden transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
-            <span className="whitespace-nowrap ml-3 block">{t("sidebar.logout")}</span>
+            <span className="whitespace-nowrap ml-3 block">Đăng xuất</span>
           </div>
         </button>
       </div>

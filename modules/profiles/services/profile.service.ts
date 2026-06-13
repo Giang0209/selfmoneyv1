@@ -14,7 +14,7 @@ import {
     UpdateProfileBody,
 } from "../types/profile.type";
 
-// Get profile
+// Dịch vụ lấy thông tin hồ sơ cá nhân của người dùng
 export const getProfileService =
     async (user_id: number) => {
 
@@ -32,7 +32,7 @@ export const getProfileService =
         return profile;
     };
 
-// Update profile
+// Dịch vụ cập nhật thông tin hồ sơ cá nhân
 export const updateProfileService =
     async ({
         user_id,
@@ -45,6 +45,7 @@ export const updateProfileService =
         user_id: number;
     }) => {
 
+        // Gọi model thực hiện cập nhật thông tin trong DB
         const updatedProfile =
             await updateProfile({
                 user_id,
@@ -58,7 +59,7 @@ export const updateProfileService =
         return updatedProfile;
     };
 
-// Change password
+// Dịch vụ thay đổi mật khẩu tài khoản
 export const changePasswordService =
     async ({
         user_id,
@@ -68,6 +69,7 @@ export const changePasswordService =
         user_id: number;
     }) => {
 
+        // Kiểm tra xem đã nhập đầy đủ mật khẩu cũ và mới chưa
         if (
             !old_password ||
             !new_password
@@ -77,6 +79,7 @@ export const changePasswordService =
             );
         }
 
+        // Kiểm tra độ dài mật khẩu mới tối thiểu là 6 ký tự
         if (
             new_password.length < 6
         ) {
@@ -85,6 +88,7 @@ export const changePasswordService =
             );
         }
 
+        // Tìm thông tin người dùng trong cơ sở dữ liệu
         const user =
             await getPasswordByUserId(
                 user_id
@@ -96,6 +100,7 @@ export const changePasswordService =
             );
         }
 
+        // Tiến hành đối chiếu mật khẩu cũ nhập vào với mật khẩu băm hiện tại trong cơ sở dữ liệu
         const isMatch =
             await bcrypt.compare(
                 old_password,
@@ -108,12 +113,14 @@ export const changePasswordService =
             );
         }
 
+        // Thực hiện băm mật khẩu mới bằng bcrypt
         const newHash =
             await bcrypt.hash(
                 new_password,
                 10
             );
 
+        // Cập nhật mật khẩu băm mới vào cơ sở dữ liệu
         await updatePassword({
             user_id,
             password_hash:
@@ -121,4 +128,4 @@ export const changePasswordService =
         });
 
         return true;
-    };
+    };

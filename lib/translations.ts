@@ -6,6 +6,7 @@ export const translations = {
       transactions: "Giao dịch",
       wallets: "Tài khoản",
       budgets: "Ngân sách",
+      saving_goals: "Mục tiêu tiết kiệm",
       categories: "Danh mục",
       analytics: "Thống kê",
       profile: "Hồ sơ cá nhân",
@@ -82,7 +83,9 @@ export const translations = {
       no_note: "Không có ghi chú",
       my_accounts: "Tài khoản của tôi",
       active_accounts: "tài khoản đang hoạt động",
-      account: "Tài khoản"
+      account: "Tài khoản",
+      saving_goals: "Mục tiêu tiết kiệm",
+      total_saving_goals: "Tiến độ tích lũy"
     },
     transactions: {
       title: "Giao dịch",
@@ -216,6 +219,7 @@ export const translations = {
       transactions: "Transactions",
       wallets: "Accounts",
       budgets: "Budgets",
+      saving_goals: "Saving Goals",
       categories: "Categories",
       analytics: "Analytics",
       profile: "Profile & Settings",
@@ -292,7 +296,9 @@ export const translations = {
       no_note: "No note",
       my_accounts: "My Accounts",
       active_accounts: "active accounts",
-      account: "Account"
+      account: "Account",
+      saving_goals: "Saving Goals",
+      total_saving_goals: "Savings Progress"
     },
     transactions: {
       title: "Transactions",

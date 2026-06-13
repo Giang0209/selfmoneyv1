@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { useLanguage } from "@/lib/LanguageContext";
+
 
 type Wallet = {
     id: number;
@@ -27,7 +27,7 @@ type WalletForm = {
 export default function WalletsPage() {
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [loading, setLoading] = useState(true);
-    const { t, language } = useLanguage();
+
 
     const [open, setOpen] = useState(false);
 
@@ -88,22 +88,22 @@ export default function WalletsPage() {
     }, [wallets]);
 
     const formatMoney = (value: number) =>
-        value.toLocaleString("vi-VN") + "đ";
+        Math.round(value).toLocaleString("vi-VN") + " đ";
 
     const getWalletType = (icon: string) => {
         switch (icon) {
             case "🏦":
-                return t("wallets.type_bank");
+                return "Ngân hàng";
             case "💵":
-                return t("wallets.type_cash");
+                return "Tiền mặt";
             case "💳":
-                return t("wallets.type_credit");
+                return "Thẻ tín dụng";
             case "📱":
-                return t("wallets.type_e_wallet");
+                return "Ví điện tử";
             case "🪙":
-                return t("wallets.type_savings");
+                return "Tiết kiệm";
             default:
-                return t("wallets.type_personal");
+                return "Cá nhân";
         }
     };
 
@@ -115,7 +115,7 @@ export default function WalletsPage() {
             const token = localStorage.getItem("token");
 
             if (!form.name || !form.balance) {
-                alert(language === "vi" ? "Vui lòng nhập đầy đủ thông tin" : "Please fill in all information");
+                alert("Vui lòng nhập đầy đủ thông tin");
                 return;
             }
 
@@ -136,11 +136,11 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || (language === "vi" ? "Tạo tài khoản thất bại" : "Failed to create account"));
+                alert("Tạo tài khoản thất bại");
                 return;
             }
 
-            alert(language === "vi" ? "Tạo tài khoản thành công" : "Account created successfully");
+            alert("Tạo tài khoản thành công");
 
             setOpen(false);
             resetForm();
@@ -148,7 +148,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert(language === "vi" ? "Lỗi tạo tài khoản" : "Error creating account");
+            alert("Lỗi tạo tài khoản");
         }
     };
 
@@ -159,7 +159,7 @@ export default function WalletsPage() {
         try {
             const token = localStorage.getItem("token");
 
-            const ok = confirm(t("wallets.confirm_delete"));
+            const ok = confirm("Bạn có chắc chắn muốn xóa ví này?");
             if (!ok) return;
 
             const res = await fetch(`/api/wallets/${id}`, {
@@ -172,16 +172,16 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || (language === "vi" ? "Xoá thất bại" : "Delete failed"));
+                alert("Xoá thất bại");
                 return;
             }
 
             setWallets((prev) => prev.filter((w) => w.id !== id));
 
-            alert(language === "vi" ? "Xoá tài khoản thành công" : "Account deleted successfully");
+            alert("Xoá tài khoản thành công");
         } catch (err) {
             console.error(err);
-            alert(language === "vi" ? "Lỗi xoá tài khoản" : "Error deleting account");
+            alert("Lỗi xoá tài khoản");
         }
     };
 
@@ -196,7 +196,7 @@ export default function WalletsPage() {
     };
 
     // =========================
-    // OPEN EDIT
+    // OPEN EDIT / DEPOSIT
     // =========================
     const openEdit = (wallet: Wallet) => {
         setMode("edit");
@@ -204,7 +204,7 @@ export default function WalletsPage() {
 
         setForm({
             name: wallet.name,
-            balance: String(wallet.balance),
+            balance: "", // start empty for deposit amount input
             icon: wallet.icon,
             color: wallet.color || "#06b6d4",
         });
@@ -222,13 +222,21 @@ export default function WalletsPage() {
     };
 
     // =========================
-    // UPDATE
+    // UPDATE / DEPOSIT
     // =========================
     const handleUpdateWallet = async () => {
         try {
             if (!selectedWallet) return;
 
             const token = localStorage.getItem("token");
+
+            const depositAmt = Number(form.balance);
+            if (isNaN(depositAmt) || depositAmt <= 0) {
+                alert("Vui lòng nhập số tiền nạp hợp lệ");
+                return;
+            }
+
+            const newBalance = Number(selectedWallet.balance) + depositAmt;
 
             const res = await fetch(`/api/wallets/${selectedWallet.id}`, {
                 method: "PATCH",
@@ -237,18 +245,18 @@ export default function WalletsPage() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    balance: Number(form.balance),
+                    balance: newBalance,
                 }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || (language === "vi" ? "Cập nhật thất bại" : "Update failed"));
+                alert("Nạp tiền thất bại");
                 return;
             }
 
-            alert(language === "vi" ? "Cập nhật số dư thành công" : "Balance updated successfully");
+            alert("Nạp tiền vào tài khoản thành công");
 
             setOpen(false);
             setMode("create");
@@ -257,7 +265,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert(language === "vi" ? "Lỗi cập nhật tài khoản" : "Error updating account");
+            alert("Lỗi nạp tiền vào tài khoản");
         }
     };
 
@@ -282,7 +290,7 @@ export default function WalletsPage() {
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-3xl font-black bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
-                                {t('wallets.title')}
+                                Tài khoản
                             </h1>
                             <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-cyan-500/20 tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
                                 Tài khoản
@@ -290,7 +298,7 @@ export default function WalletsPage() {
                         </div>
 
                         <p className="text-xs text-slate-500 mt-1.5 font-medium tracking-wide">
-                            {t('wallets.subtitle')}
+                            Quản lý tài khoản lưu trữ tiền của bạn
                         </p>
                     </div>
                 </div>
@@ -302,7 +310,7 @@ export default function WalletsPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder={t('wallets.search_placeholder')}
+                        placeholder="Tìm kiếm tài khoản"
                         className="w-full md:w-80 bg-slate-950/70 border border-slate-800/80 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-500 transition-all duration-300 shadow-inner"
                     />
 
@@ -312,7 +320,7 @@ export default function WalletsPage() {
                         className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/10 flex items-center gap-2"
                     >
                         <span className="text-lg leading-none font-black">+</span>
-                        {t('wallets.new_account')}
+                        Thêm tài khoản
                     </button>
 
                 </div>
@@ -327,7 +335,7 @@ export default function WalletsPage() {
                                 💰
                             </div>
                             <span className="uppercase text-xs font-bold tracking-wider text-slate-300">
-                                {t('wallets.total_assets')}
+                                Tổng tài sản
                             </span>
                         </div>
 
@@ -380,7 +388,7 @@ export default function WalletsPage() {
                                         </div>
 
                                         <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-slate-950/40 px-2 py-1 rounded-md border border-slate-900/60">
-                                            {new Date(wallet.created_at).toLocaleDateString(language === "vi" ? "vi-VN" : "en-US")}
+                                            {new Date(wallet.created_at).toLocaleDateString("vi-VN")}
                                         </span>
                                     </div>
 
@@ -409,24 +417,24 @@ export default function WalletsPage() {
 
                                     <div className="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center h-8">
                                         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold group-hover:text-slate-400 transition-colors">
-                                            {t('dashboard.account')}
+                                            Tài khoản
                                         </span>
                                         {/* Slide-in and fade-in Actions with Custom Premium SVGs */}
                                         <div className="flex gap-2 opacity-0 translate-x-3 scale-95 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100 transition-all duration-350 origin-right">
                                             <button
                                                 onClick={() => openEdit(wallet)}
-                                                className="text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title={t('wallets.edit_btn')}
+                                                className="text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
+                                                title={"Nạp tiền"}
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </button>
 
                                             <button
                                                 onClick={() => handleDeleteWallet(wallet.id)}
                                                 className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title={t('wallets.delete_btn')}
+                                                title={"Xóa"}
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -455,11 +463,11 @@ export default function WalletsPage() {
                             </div>
 
                             <p className="font-bold text-slate-200 group-hover:text-white transition-colors duration-250 text-base">
-                                {t('wallets.add_new')}
+                                Thêm tài khoản
                             </p>
 
                             <p className="text-xs text-slate-500 mt-1.5 text-center max-w-[200px] leading-relaxed group-hover:text-slate-400 transition-colors duration-250">
-                                {t('wallets.add_new_desc')}
+                                Tạo tài khoản mới
                             </p>
                         </button>
 
@@ -472,20 +480,17 @@ export default function WalletsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
 
                     <div className="bg-[#0b1329]/95 backdrop-blur-2xl border border-slate-800/80 rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden relative transform transition-all">
-                        {/* Radiant decorative top line */}
-                        <div className="h-1.5 w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500" />
-
                         {/* HEADER */}
                         <div className="px-6 py-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/20">
                             <div>
                                 <h3 className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                    {mode === "create" ? t('wallets.modal_add_title') : t('wallets.modal_edit_title')}
+                                    {mode === "create" ? "Thêm tài khoản" : "Nạp tiền vào tài khoản"}
                                 </h3>
 
                                 <p className="text-xs text-slate-400 mt-1">
                                     {mode === "create"
-                                        ? t('wallets.modal_add_sub')
-                                        : t('wallets.modal_edit_sub')}
+                                        ? "Tạo tài khoản mới"
+                                        : `Nạp thêm tiền vào tài khoản ${selectedWallet?.name}`}
                                 </p>
                             </div>
 
@@ -500,101 +505,131 @@ export default function WalletsPage() {
                         {/* BODY */}
                         <div className="p-6 space-y-6">
 
-                            {/* Tên ví */}
-                            <div>
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t('wallets.name_label')}
-                                </label>
+                            {mode === "create" ? (
+                                <>
+                                    {/* Tên ví */}
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
+                                            Tên tài khoản
+                                        </label>
 
-                                <input
-                                    value={form.name}
-                                    disabled={mode === "edit"}
-                                    onChange={(e) =>
-                                        setForm({ ...form, name: e.target.value })
-                                    }
-                                    placeholder={t('wallets.name_placeholder')}
-                                    className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
-                                />
-                            </div>
-
-                            {/* Số dư */}
-                            <div>
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t('wallets.balance_label')}
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-xl blur-sm" />
-                                    <input
-                                        type="number"
-                                        value={form.balance}
-                                        onChange={(e) =>
-                                            setForm({ ...form, balance: e.target.value })
-                                        }
-                                        placeholder="0"
-                                        className="relative w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-5 py-4 text-right text-3xl font-extrabold text-cyan-400 placeholder-cyan-500/30 transition-all duration-300 font-mono tracking-tight"
-                                    />
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xs font-bold text-cyan-500/60 uppercase tracking-wider">
-                                        VND
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Chọn icon */}
-                            <div>
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t('wallets.icon_label')}
-                                </p>
-
-                                <div className="grid grid-cols-5 gap-3">
-                                    {walletIcons.map((icon) => (
-                                        <button
-                                            key={icon}
-                                            type="button"
-                                            disabled={mode === "edit"}
-                                            onClick={() =>
-                                                setForm({ ...form, icon })
+                                        <input
+                                            value={form.name}
+                                            onChange={(e) =>
+                                                setForm({ ...form, name: e.target.value })
                                             }
-                                            className={`h-12 rounded-xl border text-xl flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95
-                                                ${form.icon === icon
-                                                    ? "border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
-                                                    : "border-slate-800 bg-slate-950 hover:border-slate-700 hover:bg-slate-900"
-                                                }`}
-                                        >
-                                            {icon}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                                            placeholder={'Tên tài khoản'}
+                                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 shadow-inner"
+                                        />
+                                    </div>
 
-                            {/* Màu sắc ví */}
-                            <div>
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t('wallets.color_label')}
-                                </p>
+                                    {/* Số dư */}
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
+                                            Số dư
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-xl blur-sm" />
+                                            <input
+                                                type="number"
+                                                value={form.balance}
+                                                onChange={(e) =>
+                                                    setForm({ ...form, balance: e.target.value })
+                                                }
+                                                placeholder="0"
+                                                className="relative w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-5 py-4 text-right text-3xl font-extrabold text-cyan-400 placeholder-cyan-500/30 transition-all duration-300 font-mono tracking-tight"
+                                            />
+                                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xs font-bold text-cyan-500/60 uppercase tracking-wider">
+                                                VND
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                <div className="flex gap-3 flex-wrap">
-                                    {["#06b6d4", "#f97316", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"].map((c) => (
-                                        <button
-                                            key={c}
-                                            type="button"
-                                            disabled={mode === "edit"}
-                                            onClick={() =>
-                                                setForm({ ...form, color: c })
-                                            }
-                                            className={`w-9 h-9 rounded-full border-2 transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed relative
-                                                ${form.color === c
-                                                    ? "border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"
-                                                    : "border-transparent"
-                                                }`}
-                                            style={{ backgroundColor: c }}
-                                        >
-                                            {form.color === c && (
-                                                <div className="absolute inset-0.5 rounded-full border border-slate-950" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                                    {/* Chọn icon */}
+                                    <div>
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
+                                            Chọn icon
+                                        </p>
+
+                                        <div className="grid grid-cols-5 gap-3">
+                                            {walletIcons.map((icon) => (
+                                                <button
+                                                    key={icon}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setForm({ ...form, icon })
+                                                    }
+                                                    className={`h-12 rounded-xl border text-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95
+                                                        ${form.icon === icon
+                                                            ? "border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                                                            : "border-slate-800 bg-slate-950 hover:border-slate-700 hover:bg-slate-900"
+                                                        }`}
+                                                >
+                                                    {icon}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Màu sắc ví */}
+                                    <div>
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
+                                            Chọn màu
+                                        </p>
+
+                                        <div className="flex gap-3 flex-wrap">
+                                            {["#06b6d4", "#f97316", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"].map((c) => (
+                                                <button
+                                                    key={c}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setForm({ ...form, color: c })
+                                                    }
+                                                    className={`w-9 h-9 rounded-full border-2 transition-all duration-300 hover:scale-110 relative
+                                                        ${form.color === c
+                                                            ? "border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                                                            : "border-transparent"
+                                                        }`}
+                                                    style={{ backgroundColor: c }}
+                                                >
+                                                    {form.color === c && (
+                                                        <div className="absolute inset-0.5 rounded-full border border-slate-950" />
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Chỉ hiển Số dư hiện tại dưới dạng chỉ đọc và ô Nạp tiền */}
+                                    <div className="bg-slate-900/60 rounded-xl p-4 flex justify-between items-center text-sm">
+                                        <span className="text-slate-400">Số dư hiện tại</span>
+                                        <span className="font-extrabold text-cyan-400 text-lg">{formatMoney(Number(selectedWallet?.balance || 0))}</span>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
+                                            Số tiền nạp thêm
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 rounded-xl blur-sm" />
+                                            <input
+                                                type="number"
+                                                value={form.balance}
+                                                onChange={(e) =>
+                                                    setForm({ ...form, balance: e.target.value })
+                                                }
+                                                placeholder="0"
+                                                className="relative w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-5 py-4 text-right text-3xl font-extrabold text-emerald-400 placeholder-emerald-500/30 transition-all duration-300 font-mono tracking-tight"
+                                            />
+                                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-500/60 uppercase tracking-wider">
+                                                VND
+                                            </span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                         </div>
 
@@ -605,7 +640,7 @@ export default function WalletsPage() {
                                 onClick={() => setOpen(false)}
                                 className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-800 text-slate-300 font-medium transition-all duration-200 active:scale-95"
                             >
-                                {t('wallets.cancel')}
+                                Hủy
                             </button>
 
                             <button
@@ -616,7 +651,9 @@ export default function WalletsPage() {
                                 }
                                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/20"
                             >
-                                {t('wallets.save')}
+                                {mode === "create"
+                                    ? "Lưu"
+                                    : "Xác nhận nạp"}
                             </button>
 
                         </div>

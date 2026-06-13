@@ -1,4 +1,5 @@
 // src/modules/wallets/services/wallet.service.ts
+// Tầng Service - xử lý logic nghiệp vụ cho ví
 
 import {
     createWallet,
@@ -13,7 +14,7 @@ import {
     UpdateWalletBody,
 } from "../types/wallet.type";
 
-// Create wallet
+// Dịch vụ tạo ví mới
 export const createWalletService = async ({
     user_id,
     name,
@@ -23,6 +24,7 @@ export const createWalletService = async ({
     user_id: number;
 }) => {
 
+    // Loại bỏ khoảng trắng và kiểm tra tên ví
     const cleanName = name?.trim();
 
     if (!cleanName) {
@@ -40,7 +42,7 @@ export const createWalletService = async ({
     return wallet;
 };
 
-// Get wallets
+// Dịch vụ lấy danh sách ví của người dùng
 export const getWalletsService =
     async (user_id: number) => {
 
@@ -49,7 +51,7 @@ export const getWalletsService =
         );
     };
 
-// Update wallet
+// Dịch vụ cập nhật số dư ví
 export const updateWalletService =
     async ({
         user_id,
@@ -59,6 +61,7 @@ export const updateWalletService =
         user_id: number;
     }) => {
 
+        // Kiểm tra ví tồn tại và thuộc quyền người dùng
         const wallet =
             await findWalletById({
                 wallet_id,
@@ -78,7 +81,7 @@ export const updateWalletService =
         });
     };
 
-// Delete wallet
+// Dịch vụ xoá mềm ví
 export const deleteWalletService =
     async ({
         wallet_id,
@@ -88,6 +91,7 @@ export const deleteWalletService =
         user_id: number;
     }) => {
 
+        // Kiểm tra ví tồn tại và thuộc quyền người dùng
         const wallet =
             await findWalletById({
                 wallet_id,

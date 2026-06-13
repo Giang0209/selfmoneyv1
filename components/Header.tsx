@@ -4,26 +4,27 @@ import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SidebarStore } from "./SidebarStore";
-import { useLanguage } from "@/lib/LanguageContext";
 
+// Khai báo kiểu dữ liệu cho Profile của tài khoản người dùng hiển thị trên Header
 type Profile = {
     name: string;
     avatar?: string | null;
 };
 
 export default function Header() {
-    const { t } = useLanguage();
-    const [profile, setProfile] =
-        useState<Profile | null>(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [profile, setProfile] = useState<Profile | null>(null); // State lưu thông tin cá nhân
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State đóng mở dropdown menu
+    const dropdownRef = useRef<HTMLDivElement>(null); // Ref tham chiếu đến thẻ dropdown để xử lý click ra ngoài
     const router = useRouter();
+
+    // Đồng bộ trạng thái thu gọn/mở rộng của Sidebar từ store chung
     const isCollapsed = useSyncExternalStore(
         SidebarStore.subscribe,
         SidebarStore.getSnapshot,
         SidebarStore.getSnapshot
     );
 
+    // Bắt sự kiện click chuột bên ngoài khu vực dropdown để tự động đóng dropdown menu
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -34,94 +35,86 @@ export default function Header() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Tải thông tin người dùng ngay khi Header được hiển thị
     useEffect(() => {
         fetchProfile();
     }, []);
 
+    // Lấy thông tin cá nhân (tên, avatar) từ API profile cá nhân
     const fetchProfile = async () => {
-
         try {
-
-            const token =
-                localStorage.getItem("token");
-
+            const token = localStorage.getItem("token");
             if (!token) return;
 
-            const res =
-                await fetch("/api/profile", {
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`,
-                    },
-                });
+            const res = await fetch("/api/profile", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
             if (!res.ok) {
-                console.log(
-                    t("profile.fetch_failed")
-                );
+                console.log("Không lấy được profile");
                 return;
             }
 
-            const data =
-                await res.json();
-
-            console.log(data);
-
+            const data = await res.json();
             setProfile(data);
-
         } catch (error) {
-
-            console.error(
-                "Error fetching profile:",
-                error
-            );
+            console.error("Error fetching profile:", error);
         }
     };
 
+    // Hàm trả về câu chào phù hợp tùy theo mốc thời gian trong ngày (sáng, chiều, tối)
     const getGreeting = () => {
-
-        const hour =
-            new Date().getHours();
+        const hour = new Date().getHours();
 
         if (hour < 12)
-            return t("header.greeting_morning");
+            return "Chào buổi sáng"; // Chào buổi sáng
 
         if (hour < 18)
-            return t("header.greeting_afternoon");
+            return "Chào buổi chiều"; // Chào buổi chiều
 
-        return t("header.greeting_evening");
+        return "Chào buổi tối"; // Chào buổi tối
     };
 
+    // Hàm xử lý khi người dùng thực hiện Đăng xuất
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        router.push("/login");
+        localStorage.removeItem("token"); // Xóa JWT Token trong bộ nhớ duyệt web
+        router.push("/login"); // Điều hướng về trang Đăng nhập
     };
 
     return (
-        <header className="fixed top-0 left-0 h-20 bg-sidebar-bg backdrop-blur-3xl border-b border-card-border flex items-center justify-between px-8 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" style={{ left: isCollapsed ? '5.5rem' : '16rem', width: isCollapsed ? 'calc(100% - 5.5rem)' : 'calc(100% - 16rem)' }}>
-
-            {/* LEFT: Financial Greeting */}
+        <header 
+            className="fixed top-0 left-0 h-20 bg-sidebar-bg backdrop-blur-3xl border-b border-card-border flex items-center justify-between px-8 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" 
+            style={{ 
+                left: isCollapsed ? '5.5rem' : '16rem', 
+                width: isCollapsed ? 'calc(100% - 5.5rem)' : 'calc(100% - 16rem)',
+                transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+        >
+            {/* PHẦN TRÁI: Câu chào mừng theo thời gian thực */}
             <div className="flex-1">
                 <div className="flex items-center gap-2">
                     <h2 className="text-base font-extrabold text-foreground flex items-center gap-1.5 tracking-wide">
                         <span>{getGreeting()},</span>
-                        <span className="bg-gradient-to-r from-cyan-400 to-cyan-200 bg-clip-text text-transparent">{profile?.name || t("header.guest")}</span>
+                        <span className="bg-gradient-to-r from-cyan-400 to-cyan-200 bg-clip-text text-transparent">
+                            {profile?.name || "Khách"}
+                        </span>
                         <span className="animate-bounce inline-block">👋</span>
                     </h2>
                 </div>
 
                 <p className="text-[11px] text-slate-500 font-medium tracking-wide mt-0.5 uppercase">
-                    {t("header.title_sub")}
+                    Hệ thống theo dõi chi tiêu cá nhân
                 </p>
             </div>
 
-            {/* RIGHT: User Profile Card */}
+            {/* PHẦN PHẢI: Thẻ Avatar và Dropdown menu người dùng */}
             <div className="flex items-center gap-4 relative" ref={dropdownRef}>
                 <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="relative group/avatar cursor-pointer flex items-center gap-3 bg-card-bg/40 hover:bg-card-bg px-4 py-2 rounded-2xl border border-card-border hover:border-cyan-500/30 shadow-inner transition-all duration-300"
                 >
-
                     {profile?.avatar && (
                         <img
                             src={profile.avatar}
@@ -132,10 +125,10 @@ export default function Header() {
 
                     <div className="text-left hidden sm:block">
                         <p className="text-xs text-foreground font-extrabold tracking-wide group-hover:text-cyan-400 transition-colors">
-                            {profile?.name || t("header.guest")}
+                            {profile?.name || "Khách"}
                         </p>
                         <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5 tracking-wider">
-                            {t("header.member")}
+                            Thành viên
                         </p>
                     </div>
 
@@ -144,10 +137,11 @@ export default function Header() {
                     </svg>
                 </div>
 
-                {/* DROPDOWN MENU */}
+                {/* DROPDOWN MENU CHỨC NĂNG */}
                 {isDropdownOpen && (
                     <div className="absolute top-full right-0 mt-3 w-56 bg-card-bg/95 backdrop-blur-xl border border-card-border rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden animate-fade-in-up origin-top-right">
                         <div className="py-2">
+                            {/* Liên kết đến trang Hồ sơ cá nhân */}
                             <Link
                                 href="/profile"
                                 onClick={() => setIsDropdownOpen(false)}
@@ -157,13 +151,14 @@ export default function Header() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                                 <div>
-                                    <p className="font-semibold">{t("header.profile")}</p>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">{t("header.profile_sub")}</p>
+                                    <p className="font-semibold">Tài khoản</p>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Hồ sơ cá nhân</p>
                                 </div>
                             </Link>
 
                             <div className="h-[1px] w-full bg-card-border/50 my-1" />
 
+                            {/* Nút Đăng xuất */}
                             <button
                                 onClick={handleLogout}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors group/item"
@@ -171,7 +166,7 @@ export default function Header() {
                                 <svg className="w-5 h-5 text-rose-400/80 group-hover/item:text-rose-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1" />
                                 </svg>
-                                <span className="font-semibold">{t("header.logout")}</span>
+                                <span className="font-semibold">Đăng xuất</span>
                             </button>
                         </div>
                     </div>

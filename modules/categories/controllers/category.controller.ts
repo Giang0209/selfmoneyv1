@@ -10,18 +10,20 @@ import {
     getCategoriesService,
 } from "../services/category.service";
 
-// Create category
+// Controller xử lý yêu cầu tạo danh mục mới (Create Category API)
 export const createCategoryController =
     async (req: Request) => {
 
         try {
-
+            // Xác thực đăng nhập người dùng từ JWT Token
             const user =
                 await requireAuth(req);
 
+            // Đọc dữ liệu JSON gửi từ phía Client
             const body =
                 await req.json();
 
+            // Gọi service thực hiện nghiệp vụ tạo danh mục mới
             const category =
                 await createCategoryService({
                     user_id:
@@ -40,6 +42,7 @@ export const createCategoryController =
                         body.color,
                 });
 
+            // Phản hồi thành công dạng JSON với trạng thái 201 Created
             return Response.json(
                 {
                     message:
@@ -53,7 +56,7 @@ export const createCategoryController =
             );
 
         } catch (error: any) {
-
+            // Trả về thông báo lỗi với mã trạng thái 400 Bad Request
             return Response.json(
                 {
                     message:
@@ -66,15 +69,16 @@ export const createCategoryController =
         }
     };
 
-// Get categories
+// Controller xử lý yêu cầu lấy danh sách danh mục (Get Categories API)
 export const getCategoriesController =
     async (req: Request) => {
 
         try {
-
+            // Xác thực thông tin người dùng
             const user =
                 await requireAuth(req);
 
+            // Gọi service lấy toàn bộ danh mục của người dùng
             const categories =
                 await getCategoriesService(
                     user.userId
@@ -85,7 +89,6 @@ export const getCategoriesController =
             );
 
         } catch (error: any) {
-
             return Response.json(
                 {
                     message:
@@ -99,7 +102,7 @@ export const getCategoriesController =
     };
 
 
-// Delete 
+// Controller xử lý yêu cầu xóa danh mục (Delete Category API)
 export const deleteCategoryController =
     async (
         req: Request,
@@ -107,13 +110,15 @@ export const deleteCategoryController =
     ) => {
 
         try {
-
+            // Xác thực thông tin người dùng
             const user =
                 await requireAuth(req);
 
+            // Lấy ID danh mục từ tham số động đường dẫn (context.params)
             const params =
                 await context.params;
 
+            // Gọi service tiến hành thực hiện xóa danh mục
             await deleteCategoryService({
                 user_id:
                     user.userId,
@@ -128,7 +133,6 @@ export const deleteCategoryController =
             });
 
         } catch (error: any) {
-
             return Response.json(
                 {
                     message:
@@ -139,4 +143,4 @@ export const deleteCategoryController =
                 }
             );
         }
-    };
+    };

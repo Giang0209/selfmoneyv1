@@ -1,8 +1,13 @@
-// src/modules/transactions/models/transaction.model.ts
+/**
+ * src/modules/transactions/models/transaction.model.ts
+
+ */
 
 import pool from "@/lib/db";
 
-// Create transaction
+/**
+ * Tạo mới một giao dịch thu/chi trong cơ sở dữ liệu
+ */
 export const createTransaction =
     async ({
         user_id,
@@ -45,7 +50,7 @@ export const createTransaction =
                 wallet_id,
                 category_id,
                 amount,
-                note || null,
+                note || null, // Nếu ghi chú rỗng thì lưu NULL vào database
                 transaction_date,
             ]
         );
@@ -53,7 +58,9 @@ export const createTransaction =
         return result.rows[0];
     };
 
-// Get transactions
+/**
+ * Lấy toàn bộ danh sách giao dịch của một người dùng
+ */
 export const getTransactionsByUserId =
     async (
         user_id: number
@@ -93,7 +100,9 @@ export const getTransactionsByUserId =
         return result.rows;
     };
 
-// Find transaction
+/**
+ * Tìm một giao dịch cụ thể theo ID
+ */
 export const findTransactionById =
     async (
         transaction_id: number
@@ -113,7 +122,9 @@ export const findTransactionById =
         return result.rows[0];
     };
 
-// Update transaction
+/**
+ * Cập nhật thông tin giao dịch (số tiền và/hoặc ghi chú)
+ */
 export const updateTransaction = async ({
     transaction_id,
     amount,
@@ -135,7 +146,7 @@ export const updateTransaction = async ({
         RETURNING *
         `,
         [
-            amount ?? null,
+            amount ?? null,  // Dùng nullish coalescing: chỉ truyền null khi undefined
             note ?? null,
             transaction_id,
         ]
@@ -144,7 +155,9 @@ export const updateTransaction = async ({
     return result.rows[0];
 };
 
-// Soft delete
+/**
+ * Xoá mềm giao dịch (Soft Delete)
+ */
 export const softDeleteTransaction =
     async (
         transaction_id: number

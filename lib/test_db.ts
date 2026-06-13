@@ -5,12 +5,10 @@ console.log(process.env.DATABASE_URL);
 
 async function testDbConnection() {
     try {
-        console.log('⏳ Connecting...');
-
-        const result = await pool.query('SELECT NOW()');
+        const result = await pool.query('SELECT id, phone, username FROM users');
 
         console.log('✅ Database connected!');
-        console.log(result.rows[0]);
+        console.log(result.rows);
 
     } catch (error) {
         console.error('❌ Database connection failed:', error);

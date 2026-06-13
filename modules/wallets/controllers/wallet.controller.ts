@@ -1,4 +1,5 @@
 // src/modules/wallets/controllers/wallet.controller.ts
+// Tầng Controller - xử lý HTTP request cho ví
 
 import {
     requireAuth,
@@ -11,7 +12,7 @@ import {
     updateWalletService,
 } from "../services/wallet.service";
 
-// Create wallet
+// Tạo ví mới - POST /api/wallets
 export const createWalletController =
     async (req: Request) => {
 
@@ -50,7 +51,7 @@ export const createWalletController =
 
             const message = error.message || "Lỗi server";
 
-            // duplicate wallet name
+            // Lỗi trùng tên ví
             if (message.includes("đã tồn tại")) {
                 return Response.json(
                     { message },
@@ -58,7 +59,7 @@ export const createWalletController =
                 );
             }
 
-            // validation error
+            // Lỗi thiếu dữ liệu bắt buộc
             if (message.includes("bắt buộc")) {
                 return Response.json(
                     { message },
@@ -66,7 +67,7 @@ export const createWalletController =
                 );
             }
 
-            // fallback
+            // Lỗi không xác định
             return Response.json(
                 { message: "Lỗi server" },
                 { status: 500 }
@@ -74,7 +75,7 @@ export const createWalletController =
         }
     };
 
-// Get wallets
+// Lấy danh sách ví - GET /api/wallets
 export const getWalletsController =
     async (req: Request) => {
 
@@ -106,7 +107,7 @@ export const getWalletsController =
         }
     };
 
-// Update wallet
+// Cập nhật số dư ví - PUT /api/wallets/:id
 export const updateWalletController =
     async (
         req: Request,
@@ -165,7 +166,7 @@ export const updateWalletController =
         }
     };
 
-// Delete wallet
+// Xoá mềm ví - DELETE /api/wallets/:id
 export const deleteWalletController =
     async (
         req: Request,

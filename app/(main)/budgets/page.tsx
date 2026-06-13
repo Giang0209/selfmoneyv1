@@ -71,59 +71,74 @@ export default function BudgetsPage() {
     // ================= SAVE =================
     const [saving, setSaving] = useState(false);
 
+    // ================= SAVING GOALS & WALLETS FOR SURPLUS =================
+    const [savingGoals, setSavingGoals] = useState<any[]>([]);
+    const [wallets, setWallets] = useState<any[]>([]);
+
+    // Surplus transfer modal state
+    const [surplusModal, setSurplusModal] = useState(false);
+    const [selectedSurplusBudget, setSelectedSurplusBudget] = useState<any | null>(null);
+    const [surplusTargetGoalId, setSurplusTargetGoalId] = useState<number | "">("");
+    const [surplusWalletId, setSurplusWalletId] = useState("");
+    const [surplusAmount, setSurplusAmount] = useState("");
+    const [transferringSurplus, setTransferringSurplus] = useState(false);
+
     // ================= FETCH ALL =================
-    useEffect(() => {
-
+    const fetchAll = async () => {
         const token = localStorage.getItem("token");
+        if (!token) return;
+        try {
+            setLoadingCate(true);
+            const [cateRes, budgetRes, transRes, goalsRes, walletsRes] = await Promise.all([
+                fetch("/api/categories", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                fetch("/api/budgets", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                fetch("/api/transactions", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                fetch("/api/saving-goals", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                fetch("/api/wallets", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+            ]);
 
-        const fetchAll = async () => {
+            const [cateJson, budgetJson, transJson, goalsJson, walletsJson] = await Promise.all([
+                cateRes.json(),
+                budgetRes.json(),
+                transRes.json(),
+                goalsRes.json(),
+                walletsRes.json(),
+            ]);
 
-            try {
+            setCategories(cateJson || []);
+            setBudgets(budgetJson || []);
+            setTransactions(transJson || []);
+            setSavingGoals(goalsJson || []);
+            setWallets(walletsJson || []);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingCate(false);
+        }
+    };
 
-                setLoadingCate(true);
-
-                const [cateRes, budgetRes, transRes] = await Promise.all([
-                    fetch("/api/categories", {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-
-                    fetch("/api/budgets", {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-
-                    fetch("/api/transactions", {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-                ]);
-
-                const [cateJson, budgetJson, transJson] = await Promise.all([
-                    cateRes.json(),
-                    budgetRes.json(),
-                    transRes.json(),
-                ]);
-
-                setCategories(cateJson || []);
-                setBudgets(budgetJson || []);
-                setTransactions(transJson || []);
-
-            } catch (err) {
-
-                console.error(err);
-
-            } finally {
-
-                setLoadingCate(false);
-            }
-        };
-
+    useEffect(() => {
         fetchAll();
-
     }, []);
 
     // ================= OPEN CREATE =================
@@ -313,7 +328,7 @@ export default function BudgetsPage() {
     ]);
 
     const formatMoney = (v: number) =>
-        v.toLocaleString("vi-VN") + "đ";
+        Math.round(v).toLocaleString("vi-VN") + " đ";
 
     const getPercent = (
         spent: number,
@@ -423,6 +438,42 @@ export default function BudgetsPage() {
         } finally {
 
             setSaving(false);
+        }
+    };
+
+    const handleSurplusTransfer = async () => {
+        if (!surplusTargetGoalId || !surplusAmount || !surplusWalletId) {
+            alert("Vui lòng chọn mục tiêu, ví nguồn và nhập số tiền");
+            return;
+        }
+        const token = localStorage.getItem("token");
+        try {
+            setTransferringSurplus(true);
+            const res = await fetch(`/api/saving-goals/${surplusTargetGoalId}/contribute`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    wallet_id: Number(surplusWalletId),
+                    amount: Number(surplusAmount),
+                    note: `Chuyển dư ngân sách danh mục ${selectedSurplusBudget?.name || ""}`,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Chuyển tiền thất bại");
+
+            alert("Chuyển dư ngân sách vào mục tiêu tiết kiệm thành công!");
+            setSurplusModal(false);
+            setSurplusTargetGoalId("");
+            setSurplusWalletId("");
+            setSelectedSurplusBudget(null);
+            await fetchAll();
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setTransferringSurplus(false);
         }
     };
 
@@ -588,10 +639,10 @@ export default function BudgetsPage() {
 
                                     <div className="flex justify-between text-base mb-2 mt-6 items-baseline">
                                         <span className="text-slate-400 font-sans tabular-nums">
-                                            <span className="font-semibold text-slate-200 text-base">{b.spent.toLocaleString("vi-VN")}</span>
+                                            <span className="font-semibold text-slate-200 text-base">{Math.round(b.spent).toLocaleString("vi-VN")}</span>
                                             <span className="opacity-75 ml-0.5 mr-1.5">đ</span>
                                             <span className="text-base text-slate-600 font-normal mx-1">/</span>
-                                            <span className="font-semibold text-slate-500 text-base">{b.limit.toLocaleString("vi-VN")}</span>
+                                            <span className="font-semibold text-slate-500 text-base">{Math.round(b.limit).toLocaleString("vi-VN")}</span>
                                             <span className="opacity-75 ml-0.5">đ</span>
                                         </span>
 
@@ -616,7 +667,28 @@ export default function BudgetsPage() {
                                 </div>
 
                                 {/* ACTIONS */}
-                                <div className="mt-6 pt-4 border-t border-slate-800/80 flex justify-end gap-2">
+                                <div className="mt-6 pt-4 border-t border-slate-800/80 flex justify-end items-center gap-2">
+                                    {(b.year < now.getFullYear() || (b.year === now.getFullYear() && b.month < now.getMonth() + 1)) && (b.limit - b.spent > 0) && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedSurplusBudget(b);
+                                                setSurplusAmount(String(b.limit - b.spent));
+                                                setSurplusWalletId(wallets[0]?.id || "");
+                                                const linkedGoal = savingGoals.find((g) => g.category_id === b.category_id && g.status === "active");
+                                                if (linkedGoal) {
+                                                    setSurplusTargetGoalId(linkedGoal.id);
+                                                } else {
+                                                    setSurplusTargetGoalId("");
+                                                }
+                                                setSurplusModal(true);
+                                            }}
+                                            className="mr-auto text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30 transition duration-200 active:scale-95"
+                                            title="Chuyển ngân sách dư cuối tháng vào mục tiêu tiết kiệm"
+                                        >
+                                            Chuyển dư →
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() => handleEdit(b)}
                                         className="text-slate-400 hover:text-cyan-400 transition p-1.5 rounded-lg hover:bg-slate-800/80"
@@ -843,6 +915,78 @@ export default function BudgetsPage() {
                                     : editingId
                                         ? "Cập nhật ngân sách"
                                         : "Lưu ngân sách"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Surplus Transfer Modal ── */}
+            {surplusModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+                    <div className="bg-[#0b1329]/95 backdrop-blur-2xl border border-slate-800/80 rounded-3xl w-full max-w-sm shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden">
+                        <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400" />
+
+                        <div className="px-6 py-5 border-b border-slate-800/80 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-extrabold text-emerald-400">Chuyển dư vào mục tiêu</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">Dư ngân sách {selectedSurplusBudget?.name || ""}: <span className="text-emerald-400 font-bold">{formatMoney(selectedSurplusBudget ? selectedSurplusBudget.limit - selectedSurplusBudget.spent : 0)}</span></p>
+                            </div>
+                            <button onClick={() => setSurplusModal(false)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm">✕</button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Chọn mục tiêu tiết kiệm</label>
+                                <select
+                                    value={surplusTargetGoalId}
+                                    onChange={(e) => setSurplusTargetGoalId(Number(e.target.value))}
+                                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 transition text-sm"
+                                >
+                                    <option value="">Chọn mục tiêu...</option>
+                                    {savingGoals.filter((g) => g.status === "active").map((g) => (
+                                        <option key={g.id} value={g.id} className="bg-slate-950">
+                                            {g.icon} {g.name} — còn thiếu {formatMoney(Number(g.target_amount) - Number(g.saved_amount))}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Ví nguồn</label>
+                                <select
+                                    value={surplusWalletId}
+                                    onChange={(e) => setSurplusWalletId(e.target.value)}
+                                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 transition text-sm"
+                                >
+                                    <option value="">Chọn ví...</option>
+                                    {wallets.map((w) => (
+                                        <option key={w.id} value={w.id} className="bg-slate-950">
+                                            {w.icon} {w.name} ({formatMoney(Number(w.balance))})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Số tiền chuyển (VND)</label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={surplusAmount}
+                                        onChange={(e) => setSurplusAmount(e.target.value)}
+                                        className="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-5 py-4 text-right text-2xl font-extrabold text-emerald-400 outline-none transition font-mono"
+                                    />
+                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-500/60 uppercase">VND</span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1.5 text-right">Tối đa: {formatMoney(selectedSurplusBudget ? selectedSurplusBudget.limit - selectedSurplusBudget.spent : 0)}</p>
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-5 bg-slate-950/40 border-t border-slate-800/80 flex gap-3">
+                            <button onClick={() => setSurplusModal(false)} className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition text-sm">Bỏ qua</button>
+                            <button onClick={handleSurplusTransfer} disabled={transferringSurplus} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold transition text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-50">
+                                {transferringSurplus ? "Đang chuyển..." : "Chuyển tiền ✓"}
                             </button>
                         </div>
                     </div>

@@ -2,7 +2,7 @@
 
 import pool from "@/lib/db";
 
-// Create
+// Tạo mới một bản ghi ngân sách trong cơ sở dữ liệu
 export const createBudget = async ({
     user_id,
     category_id,
@@ -47,7 +47,7 @@ export const createBudget = async ({
     return result.rows[0];
 };
 
-// Get all
+// Lấy toàn bộ danh sách ngân sách của người dùng, liên kết (Join) với bảng danh mục để lấy thông tin hiển thị
 export const getBudgetsByUserId =
     async (
         user_id: number
@@ -84,7 +84,7 @@ export const getBudgetsByUserId =
         return result.rows;
     };
 
-// Find by id
+// Tìm kiếm ngân sách dựa trên ID ngân sách
 export const findBudgetById =
     async (
         budget_id: number
@@ -104,7 +104,7 @@ export const findBudgetById =
         return result.rows[0];
     };
 
-// Find duplicate
+// Tìm kiếm ngân sách trùng lặp (tránh việc một danh mục chi tiêu có 2 hạn mức ngân sách trong cùng một tháng)
 export const findBudgetDuplicate =
     async ({
         user_id,
@@ -149,7 +149,7 @@ export const findBudgetDuplicate =
         return result.rows[0];
     };
 
-// Update
+// Cập nhật số tiền hạn mức ngân sách
 export const updateBudget = async ({
     budget_id,
     amount,
@@ -181,7 +181,7 @@ export const updateBudget = async ({
     return result.rows[0];
 };
 
-// Soft delete
+// Thực hiện xóa mềm ngân sách bằng cách cập nhật cột deleted_at
 export const softDeleteBudget =
     async (
         budget_id: number
@@ -197,4 +197,4 @@ export const softDeleteBudget =
             `,
             [budget_id]
         );
-    };
+    };

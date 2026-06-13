@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Link from "next/link";
-import { useLanguage } from "@/lib/LanguageContext";
+
 
 type Transaction = {
     id: number;
@@ -36,12 +36,24 @@ type CategorySummary = {
     type: "income" | "expense";
 };
 
+type SavingGoal = {
+    id: number;
+    name: string;
+    icon: string;
+    target_amount: number;
+    saved_amount: number;
+    deadline: string | null;
+    status: "active" | "completed" | "cancelled";
+    color: string;
+};
+
 export default function DashboardPage() {
-    const { t } = useLanguage();
+
     const [loading, setLoading] = useState(true);
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
+    const [savingGoals, setSavingGoals] = useState<SavingGoal[]>([]);
     const [topCategories, setTopCategories] = useState<CategorySummary[]>([]);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -55,7 +67,7 @@ export default function DashboardPage() {
 
             const token = localStorage.getItem("token");
 
-            const [walletRes, transactionRes] = await Promise.all([
+            const [walletRes, transactionRes, savingGoalRes] = await Promise.all([
                 fetch("/api/wallets", {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -67,10 +79,17 @@ export default function DashboardPage() {
                         Authorization: `Bearer ${token}`,
                     },
                 }),
+
+                fetch("/api/saving-goals", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
             ]);
 
             const walletJson = await walletRes.json();
             const transactionJson = await transactionRes.json();
+            const savingGoalJson = await savingGoalRes.json();
 
             const walletData = Array.isArray(walletJson)
                 ? walletJson
@@ -80,8 +99,13 @@ export default function DashboardPage() {
                 ? transactionJson
                 : transactionJson.data || [];
 
+            const savingGoalData = Array.isArray(savingGoalJson)
+                ? savingGoalJson
+                : savingGoalJson.data || [];
+
             setWallets(walletData);
             setTransactions(transactionData);
+            setSavingGoals(savingGoalData);
 
             // ===== CATEGORY SUMMARY =====
             // lấy cả income + expense giống transaction page
@@ -163,6 +187,19 @@ export default function DashboardPage() {
         );
     }, [wallets]);
 
+    // ===== SAVING GOALS STATS =====
+    const totalTarget = useMemo(() => {
+        return savingGoals.reduce((sum, g) => sum + Number(g.target_amount || 0), 0);
+    }, [savingGoals]);
+
+    const totalSaved = useMemo(() => {
+        return savingGoals.reduce((sum, g) => sum + Number(g.saved_amount || 0), 0);
+    }, [savingGoals]);
+
+    const goalProgress = useMemo(() => {
+        return totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
+    }, [totalSaved, totalTarget]);
+
     // ===== RECENT TRANSACTION =====
     const recentTransactions = useMemo(() => {
         return [...transactions]
@@ -229,15 +266,15 @@ export default function DashboardPage() {
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-3xl font-black bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
-                                {t("dashboard.title")}
+                                Trang chủ
                             </h1>
                             <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-cyan-500/20 tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-                                {t("dashboard.live_overview")}
+                                Live Overview
                             </span>
                         </div>
 
                         <p className="text-xs text-slate-500 mt-1.5 font-medium tracking-wide">
-                            {t("dashboard.subtitle")}
+                            Tổng quan tài chính cá nhân thông minh và trực quan của bạn
                         </p>
                     </div>
                 </div>
@@ -257,13 +294,13 @@ export default function DashboardPage() {
                             </div>
 
                             <span className="text-xs text-green-400 bg-green-400/10 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                                {t("dashboard.income")}
+                                Thu nhập
                             </span>
 
                         </div>
 
                         <p className="text-slate-400 text-sm mb-1">
-                            {t("dashboard.total_income")}
+                            Tổng thu nhập
                         </p>
 
                         <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
@@ -288,13 +325,13 @@ export default function DashboardPage() {
                             </div>
 
                             <span className="text-xs text-red-400 bg-red-400/10 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                                {t("dashboard.expense")}
+                                Chi tiêu
                             </span>
 
                         </div>
 
                         <p className="text-slate-400 text-sm mb-1">
-                            {t("dashboard.total_expense")}
+                            Tổng chi tiêu
                         </p>
 
                         <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex items-baseline gap-0.5 tracking-wide">
@@ -319,13 +356,13 @@ export default function DashboardPage() {
                             </div>
 
                             <span className="text-xs text-cyan-400 bg-cyan-400/10 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                                {t("dashboard.balance")}
+                                Số dư
                             </span>
 
                         </div>
 
                         <p className="text-slate-400 text-sm mb-1">
-                            {t("dashboard.current_balance")}
+                            Số dư hiện tại
                         </p>
 
                         <h2
@@ -357,9 +394,9 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h3 className="text-xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent mb-1">
-                                    {t("dashboard.chart_title")}
+                                    Biểu đồ thu chi
                                 </h3>
-                                <p className="text-slate-500 text-sm">{t("budgets.year_label")} {selectedYear}</p>
+                                <p className="text-slate-500 text-sm">Năm {selectedYear}</p>
                             </div>
 
                             <div className="flex items-center gap-4">
@@ -367,11 +404,11 @@ export default function DashboardPage() {
                                 <div className="flex items-center gap-3">
                                     <span className="flex items-center gap-1.5 text-xs text-slate-400">
                                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-                                        {t("dashboard.income")}
+                                        Thu nhập
                                     </span>
                                     <span className="flex items-center gap-1.5 text-xs text-slate-400">
                                         <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]" />
-                                        {t("dashboard.expense")}
+                                        Chi tiêu
                                     </span>
                                 </div>
                                 <input
@@ -449,10 +486,10 @@ export default function DashboardPage() {
 
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
-                                {t("dashboard.my_categories")}
+                                Danh mục của tôi
                             </h3>
                             <Link href="/categories" className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold uppercase tracking-wider transition-colors">
-                                {t("dashboard.view_all")}
+                                Xem tất cả
                             </Link>
                         </div>
 
@@ -508,6 +545,142 @@ export default function DashboardPage() {
 
                 </section>
 
+                {/* ===== SAVING GOALS ===== */}
+                <section className="mb-8">
+                    <div className="bg-gradient-to-br from-slate-950/60 via-slate-900/60 to-slate-950/60 backdrop-blur-xl border border-slate-800/80 hover:border-slate-700/60 rounded-3xl p-6 shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group/goals">
+                        {/* Glowing accent background */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none" />
+
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent mb-1">
+                                    Mục tiêu tiết kiệm
+                                </h3>
+                                <p className="text-slate-500 text-xs font-medium">
+                                    {savingGoals.length} mục tiêu tiết kiệm đang thực hiện
+                                </p>
+                            </div>
+
+                            <Link
+                                href="/saving-goals"
+                                className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold uppercase tracking-wider transition-colors"
+                            >
+                                Xem tất cả
+                            </Link>
+                        </div>
+
+                        {loading ? (
+                            <div className="p-8 text-center">
+                                <div className="w-8 h-8 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin mx-auto mb-3" />
+                                <p className="text-slate-500 text-sm">Đang tải...</p>
+                            </div>
+                        ) : savingGoals.length === 0 ? (
+                            <div className="text-center py-10 bg-slate-950/30 border border-dashed border-slate-800 rounded-2xl">
+                                <p className="text-slate-500 text-sm mb-3">Chưa có mục tiêu tiết kiệm nào</p>
+                                <Link
+                                    href="/saving-goals"
+                                    className="px-4 py-2 rounded-xl text-xs font-bold bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 transition-all duration-200"
+                                >
+                                    + Tạo mục tiêu mới
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {savingGoals.slice(0, 3).map((goal) => {
+                                    const pct = goal.target_amount > 0 ? (goal.saved_amount / goal.target_amount) * 100 : 0;
+                                    const remaining = Math.max(0, Number(goal.target_amount) - Number(goal.saved_amount));
+
+                                    return (
+                                        <div
+                                            key={goal.id}
+                                            className="group/goal relative flex flex-col justify-between p-5 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 hover:bg-slate-900/50 hover:border-slate-700/80 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.4)] overflow-hidden"
+                                        >
+                                            {/* Top row: Icon, Name and percentage badge */}
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-300 border"
+                                                        style={{
+                                                            color: goal.color || "#8b5cf6",
+                                                            backgroundColor: `${goal.color || "#8b5cf6"}15`,
+                                                            borderColor: `${goal.color || "#8b5cf6"}35`,
+                                                        }}
+                                                    >
+                                                        {goal.icon || "🎯"}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-semibold text-slate-200 group-hover/goal:text-white transition-colors text-sm">
+                                                            {goal.name}
+                                                        </h4>
+                                                        {goal.deadline && (
+                                                            <p className="text-[10px] text-slate-500 mt-0.5">
+                                                                Hạn: {new Date(goal.deadline).toLocaleDateString("vi-VN")}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span
+                                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                                    style={{
+                                                        color: goal.color || "#8b5cf6",
+                                                        backgroundColor: `${goal.color || "#8b5cf6"}15`,
+                                                    }}
+                                                >
+                                                    {Math.round(pct)}%
+                                                </span>
+                                            </div>
+
+                                            {/* Mid row: amounts */}
+                                            <div className="space-y-1 mb-3">
+                                                <div className="flex justify-between items-baseline text-xs">
+                                                    <span className="text-slate-500">Đã tích lũy</span>
+                                                    <span className="font-bold text-slate-300">
+                                                        {Math.round(goal.saved_amount).toLocaleString("vi-VN")} đ
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-baseline text-xs">
+                                                    <span className="text-slate-500">Mục tiêu</span>
+                                                    <span className="font-semibold text-slate-400">
+                                                        {Math.round(goal.target_amount).toLocaleString("vi-VN")} đ
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Bottom row: Progress bar & remaining */}
+                                            <div>
+                                                <div className="w-full h-1.5 rounded-full bg-slate-850 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-500"
+                                                        style={{
+                                                            width: `${Math.min(pct, 100)}%`,
+                                                            backgroundColor: goal.color || "#8b5cf6",
+                                                            boxShadow: `0 0 6px ${goal.color || "#8b5cf6"}80`,
+                                                        }}
+                                                    />
+                                                </div>
+                                                {remaining > 0 && (
+                                                    <p className="text-[10px] text-slate-500 mt-2 text-right">
+                                                        Còn thiếu: <span className="font-semibold text-slate-400">{Math.round(remaining).toLocaleString("vi-VN")} đ</span>
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Accent line */}
+                                            <div
+                                                className="absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 opacity-30 group-hover/goal:opacity-100"
+                                                style={{
+                                                    background: `linear-gradient(to right, transparent, ${goal.color || "#8b5cf6"}80, transparent)`,
+                                                }}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </section>
+
                 {/* ===== WALLET + TRANSACTION ===== */}
                 <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
@@ -517,15 +690,15 @@ export default function DashboardPage() {
                         <div className="px-6 py-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-950/20">
                             <div>
                                 <h3 className="text-xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
-                                    {t("dashboard.recent_transactions")}
+                                    Giao dịch gần đây
                                 </h3>
-                                <p className="text-xs text-slate-500 mt-0.5">{t("dashboard.latest_updates")}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">Cập nhật mới nhất</p>
                             </div>
                             <Link
                                 href="/transactions"
                                 className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold uppercase tracking-wider transition-colors"
                             >
-                                {t("dashboard.view_all")}
+                                Xem tất cả
                             </Link>
                         </div>
 
@@ -533,7 +706,7 @@ export default function DashboardPage() {
                             {loading ? (
                                 <div className="p-8 text-center">
                                     <div className="w-8 h-8 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin mx-auto mb-3" />
-                                    <p className="text-slate-500 text-sm">{t("dashboard.loading")}</p>
+                                    <p className="text-slate-500 text-sm">Đang tải...</p>
                                 </div>
                             ) : (
                                 recentTransactions.map((t) => (
@@ -614,15 +787,15 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h3 className="text-xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
-                                    {t("dashboard.my_accounts")}
+                                    Tài khoản của tôi
                                 </h3>
-                                <p className="text-xs text-slate-500 mt-0.5">{wallets.length} {t("dashboard.active_accounts")}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">{wallets.length} tài khoản đang hoạt động</p>
                             </div>
                             <Link
                                 href="/wallets"
                                 className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold uppercase tracking-wider transition-colors"
                             >
-                                {t("dashboard.view_all")}
+                                Xem tất cả
                             </Link>
                         </div>
 

@@ -535,63 +535,49 @@ export default function AnalyticsPage() {
             desc: string;
         }[] = [];
 
-        if (budgetPercent >= 100) {
+        // Kiểm tra ngân sách cho từng danh mục
+        let hasOverBudget = false;
 
-            arr.push({
-                type: "warning",
-                title:
-                    "Đã vượt ngân sách",
-                desc: `Bạn đã vượt ${budgetPercent - 100
-                    }% ngân sách tháng này.`,
-            });
+        currentBudgets.forEach((b) => {
+            const categoryName = b.category_name;
+            if (!categoryName) return;
 
-        } else if (
-            budgetPercent >= 80
-        ) {
+            // Tính tổng chi tiêu thực tế của danh mục này trong tháng hiện tại
+            const spent = currentMonthTransactions
+                .filter((t) => t.category_name === categoryName && t.category_type === "expense")
+                .reduce((sum, t) => sum + Number(t.amount), 0);
 
-            arr.push({
-                type: "warning",
-                title:
-                    "Ngân sách sắp vượt mức",
-                desc: `Bạn đã dùng ${budgetPercent}% ngân sách.`,
-            });
+            const budgetAmount = Number(b.amount);
+            if (budgetAmount <= 0) return;
 
-        } else {
+            const percent = Math.round((spent / budgetAmount) * 100);
 
-            arr.push({
-                type: "good",
-                title:
-                    "Chi tiêu ổn định",
-                desc:
-                    "Bạn vẫn đang kiểm soát chi tiêu khá tốt.",
-            });
-        }
-
-        if (totalBudget > 0) {
-
-            const remaining =
-                totalBudget - totalExpense;
-
-            if (remaining > 0) {
-
-                arr.push({
-                    type: "good",
-                    title:
-                        "Ngân sách còn dư",
-                    desc: `Bạn còn ${remaining.toLocaleString()}đ ngân sách trong tháng này.`,
-                });
-
-            } else {
-
+            if (percent >= 100) {
+                hasOverBudget = true;
                 arr.push({
                     type: "warning",
-                    title:
-                        "Ngân sách đã hết",
-                    desc:
-                        "Bạn đã sử dụng toàn bộ ngân sách tháng này.",
+                    title: `Vượt hạn mức ${categoryName}`,
+                    desc: `Danh mục "${categoryName}" đã chi tiêu vượt ${percent - 100}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
+                });
+            } else if (percent >= 80) {
+                hasOverBudget = true;
+                arr.push({
+                    type: "warning",
+                    title: `Sắp vượt hạn mức ${categoryName}`,
+                    desc: `Danh mục "${categoryName}" đã dùng ${percent}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
                 });
             }
+        });
+
+        if (!hasOverBudget) {
+            arr.push({
+                type: "good",
+                title: "Chi tiêu ổn định",
+                desc: "Tất cả các danh mục chi tiêu đều đang ở trong giới hạn ngân sách cho phép.",
+            });
         }
+
+
 
         // Wallet low balance
         wallets.forEach((wallet) => {
@@ -616,6 +602,8 @@ export default function AnalyticsPage() {
         totalExpense,
         totalBudget,
         wallets,
+        currentBudgets,
+        currentMonthTransactions,
     ]);
 
     return (

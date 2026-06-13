@@ -278,6 +278,10 @@ body.light .bg-slate-900\/80 {
     color: var(--text-primary) !important;
 }
 
+body.light .bg-slate-900\/60 {
+    background-color: var(--input-bg) !important;
+}
+
 /* Badges / nested elements bg */
 body.light .bg-slate-950\/80.text-slate-400 {
     background-color: #f1f5f9 !important;

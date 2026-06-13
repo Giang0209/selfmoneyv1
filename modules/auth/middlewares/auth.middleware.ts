@@ -8,11 +8,11 @@ import {
     findUserById,
 } from "../models/auth.model";
 
-// Require auth
+// Middleware kiểm tra quyền đăng nhập (Yêu cầu Token xác thực)
 export const requireAuth =
     async (req: Request) => {
 
-        // Authorization header
+        // Lấy thông tin tiêu đề Authorization trong headers
         const authHeader =
             req.headers.get(
                 "authorization"
@@ -24,7 +24,7 @@ export const requireAuth =
             );
         }
 
-        // Bearer token
+        // Tách chuỗi Bearer <Token> lấy mã JWT Token
         const token =
             authHeader.split(" ")[1];
 
@@ -34,7 +34,7 @@ export const requireAuth =
             );
         }
 
-        // Verify token
+        // Tiến hành giải mã và xác thực tính hợp lệ của Token
         const decoded =
             await verifyToken(token);
 
@@ -44,7 +44,7 @@ export const requireAuth =
             );
         }
 
-        // Check user exists
+        // Đối chiếu cơ sở dữ liệu để chắc chắn người dùng vẫn tồn tại trong hệ thống
         const user =
             await findUserById(
                 decoded.userId
@@ -56,5 +56,6 @@ export const requireAuth =
             );
         }
 
+        // Trả về thông tin giải mã thành công (chứa userId, phone) để dùng cho các bước xử lý sau
         return decoded;
-    };
+    };

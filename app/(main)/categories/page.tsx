@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { useLanguage } from "@/lib/LanguageContext";
+
 
 type Category = {
     id: number;
@@ -25,7 +25,7 @@ type FormState = {
 export default function CategoryPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-  const { t, language } = useLanguage();
+
 
     const [tab, setTab] = useState<"expense" | "income">("expense");
     const [search, setSearch] = useState("");
@@ -134,7 +134,7 @@ export default function CategoryPage() {
     // DELETE
     // =========================
     const handleDelete = async (id: number) => {
-        const ok = confirm(t("categories.confirm_delete"));
+        const ok = confirm("Bạn có chắc chắn muốn xóa danh mục này?");
         if (!ok) return;
 
         try {
@@ -175,7 +175,7 @@ export default function CategoryPage() {
     const colors = ["#06b6d4", "#f97316", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ec4899", "#ef4444", "#6366f1", "#d946ef", "#f59e0b", "#84cc16", "#14b8a6", "#64748b"];
 
     const formatMoney = (v: number) =>
-        v.toLocaleString("vi-VN") + "đ";
+        Math.round(v).toLocaleString("vi-VN") + " đ";
 
     return (
         <div className="bg-background min-h-screen text-foreground relative overflow-hidden transition-colors duration-300">
@@ -194,7 +194,7 @@ export default function CategoryPage() {
                     <div>
                         <div className="flex items-center gap-2.5">
                             <h1 className="text-3xl font-black bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
-                                {t('categories.title')}
+                                Danh mục
                             </h1>
                             <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-cyan-500/20 tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
                                 Categories
@@ -202,7 +202,7 @@ export default function CategoryPage() {
                         </div>
 
                         <p className="text-xs text-slate-500 mt-1.5 font-medium tracking-wide">
-                            {t('categories.subtitle')}
+                            Quản lý danh mục thu chi thông minh của bạn
                         </p>
                     </div>
                 </div>
@@ -211,7 +211,7 @@ export default function CategoryPage() {
                 <div className="mb-6 flex items-center justify-between gap-4">
                     <input
                         type="text"
-                        placeholder={t('categories.search_placeholder')}
+                        placeholder="Tìm kiếm danh mục..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-full md:w-80 bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
@@ -222,7 +222,7 @@ export default function CategoryPage() {
                         onClick={openCreate}
                         className="bg-cyan-500 text-black px-5 py-3 rounded-xl font-bold hover:bg-cyan-400 transition whitespace-nowrap"
                     >
-                        + {t('categories.new_category')}
+                        + Danh mục mới
                     </button>
                 </div>
 
@@ -235,7 +235,7 @@ export default function CategoryPage() {
                             : "text-slate-400 hover:text-slate-200"
                             }`}
                     >
-                        💳 {t('categories.tab_expense')}
+                        💳 Chi tiêu
                     </button>
 
                     <button
@@ -245,7 +245,7 @@ export default function CategoryPage() {
                             : "text-slate-400 hover:text-slate-200"
                             }`}
                     >
-                        🏦 {t('categories.tab_income')}
+                        🏦 Thu nhập
                     </button>
                 </div>
 
@@ -265,7 +265,7 @@ export default function CategoryPage() {
                                         {/* Icon with radial glow */}
                                         <div className="relative select-none flex-shrink-0">
                                             {/* Color glow backdrop */}
-                                            <div 
+                                            <div
                                                 className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300 animate-pulse"
                                                 style={{ backgroundColor: item.color || "#06b6d4" }}
                                             />
@@ -288,12 +288,11 @@ export default function CategoryPage() {
                                             </h3>
 
                                             <div className="mt-1.5">
-                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit ${
-                                                    item.type === "income"
+                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit ${item.type === "income"
                                                         ? "text-green-400 group-hover:border-green-500/30"
                                                         : "text-rose-400 group-hover:border-rose-500/30"
-                                                }`}>
-                                                    {item.type === "income" ? t('categories.tab_income') : t('categories.tab_expense')}
+                                                    }`}>
+                                                    {item.type === "income" ? 'Thu nhập' : 'Chi tiêu'}
                                                 </span>
                                             </div>
                                         </div>
@@ -302,7 +301,7 @@ export default function CategoryPage() {
 
                                 <div className="mt-4">
                                     <p className="text-xs uppercase text-slate-500 mb-1 font-semibold tracking-wider">
-                                        {t('categories.total_transactions')}
+                                        Tổng giao dịch
                                     </p>
 
                                     <p
@@ -319,15 +318,15 @@ export default function CategoryPage() {
                                     <div className="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center h-8">
                                         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                                             {item.created_at
-                                                ? new Date(item.created_at).toLocaleDateString(language === "vi" ? "vi-VN" : "en-US")
-                                                : t('sidebar.categories')}
+                                                ? new Date(item.created_at).toLocaleDateString("vi-VN")
+                                                : 'Danh mục'}
                                         </span>
                                         {/* Slide-in and fade-in Actions */}
                                         <div className="flex gap-2 opacity-0 translate-x-3 scale-95 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100 transition-all duration-300 origin-right">
                                             <button
                                                 onClick={() => handleDelete(item.id)}
                                                 className="text-slate-400 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-slate-800/80"
-                                                title={t('categories.delete_tooltip')}
+                                                title="Xóa danh mục"
                                             >
                                                 🗑️
                                             </button>
@@ -349,11 +348,11 @@ export default function CategoryPage() {
                             </div>
 
                             <p className="font-bold text-white text-lg">
-                                {t('categories.add_category')}
+                                Thêm danh mục
                             </p>
 
                             <p className="text-xs text-slate-400 mt-1 text-center max-w-[200px]">
-                                {t('categories.add_desc')}
+                                Tạo danh mục mới cho thu nhập hoặc chi tiêu
                             </p>
                         </button>
 
@@ -373,11 +372,11 @@ export default function CategoryPage() {
                         <div className="px-6 py-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/20">
                             <div>
                                 <h3 className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                    {t('categories.modal_title')}
+                                    Tạo danh mục mới
                                 </h3>
 
                                 <p className="text-xs text-slate-400 mt-1">
-                                    {t('categories.modal_sub')}
+                                    Thêm danh mục để phân loại thu chi cá nhân
                                 </p>
                             </div>
 
@@ -395,12 +394,12 @@ export default function CategoryPage() {
                             {/* Tên danh mục */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    {t('categories.name_label')}
+                                    Tên danh mục
                                 </label>
 
                                 <input
                                     className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 shadow-inner"
-                                    placeholder={t('categories.name_placeholder')}
+                                    placeholder="VD: Ăn uống, Lương, Mua sắm..."
                                     value={form.name}
                                     onChange={(e) =>
                                         setForm({ ...form, name: e.target.value })
@@ -411,7 +410,7 @@ export default function CategoryPage() {
                             {/* Loại danh mục */}
                             <div>
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t('categories.type_label')}
+                                    Loại danh mục
                                 </label>
 
                                 <div className="flex gap-3">
@@ -425,7 +424,7 @@ export default function CategoryPage() {
                                             : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 hover:border-slate-700"
                                             }`}
                                     >
-                                        💳 {t('categories.tab_expense')}
+                                        💳 Chi tiêu
                                     </button>
 
                                     <button
@@ -438,7 +437,7 @@ export default function CategoryPage() {
                                             : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 hover:border-slate-700"
                                             }`}
                                     >
-                                        🏦 {t('categories.tab_income')}
+                                        🏦 Thu nhập
                                     </button>
                                 </div>
                             </div>
@@ -446,7 +445,7 @@ export default function CategoryPage() {
                             {/* Chọn icon */}
                             <div>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t('categories.icon_label')}
+                                    Chọn icon
                                 </p>
 
                                 <div className="grid grid-cols-6 gap-3">
@@ -475,7 +474,7 @@ export default function CategoryPage() {
                             {/* Màu sắc */}
                             <div>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-3">
-                                    {t('categories.color_label')}
+                                    Màu sắc danh mục
                                 </p>
 
                                 <div className="flex gap-3 flex-wrap">
@@ -510,14 +509,14 @@ export default function CategoryPage() {
                                 onClick={() => setOpen(false)}
                                 className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-800 text-slate-300 font-medium transition-all duration-200 active:scale-95"
                             >
-                                {t('categories.cancel')}
+                                Hủy
                             </button>
 
                             <button
                                 onClick={handleSave}
                                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/20"
                             >
-                                {t('categories.save')}
+                                Lưu danh mục
                             </button>
 
                         </div>

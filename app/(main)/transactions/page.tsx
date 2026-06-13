@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { useLanguage } from "@/lib/LanguageContext";
 
+
+// Khai báo kiểu dữ liệu cho Giao dịch (Transaction)
 type Transaction = {
     id: number;
     amount: string;
@@ -12,13 +13,14 @@ type Transaction = {
     transaction_date: string;
 
     category_name: string;
-    category_type: "income" | "expense";
+    category_type: "income" | "expense"; // Thu nhập hoặc Chi tiêu
     category_icon: string;
     category_color: string;
 
-    wallet_name: string;
+    wallet_name: string; // Tên ví thực hiện giao dịch
 };
 
+// Khai báo kiểu dữ liệu cho Danh mục (Category)
 type Category = {
     id: number;
     name: string;
@@ -27,23 +29,26 @@ type Category = {
     color: string;
 };
 
+// Khai báo kiểu dữ liệu cho Ví (Wallet)
 type Wallet = {
     id: number;
     name: string;
-    balance: string;
+    balance: string; // Số dư tài khoản/ví
 };
 
 export default function TransactionPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [wallets, setWallets] = useState<Wallet[]>([]);
+    // --- KHAI BÁO CÁC STATE QUẢN LÝ DỮ LIỆU VÀ GIAO DIỆN ---
+    const [transactions, setTransactions] = useState<Transaction[]>([]); // Danh sách tất cả giao dịch
+    const [categories, setCategories] = useState<Category[]>([]);       // Danh sách danh mục thu/chi
+    const [wallets, setWallets] = useState<Wallet[]>([]);               // Danh sách ví tiền của người dùng
 
-    const [loading, setLoading] = useState(true);
-    const [openModal, setOpenModal] = useState(false);
+    const [loading, setLoading] = useState(true);                       // Trạng thái tải dữ liệu
+    const [openModal, setOpenModal] = useState(false);                  // Trạng thái đóng/mở form thêm/sửa
 
-    // ===== NEW =====
+    // Quản lý ID giao dịch đang chỉnh sửa (null nếu là thêm mới)
     const [editingId, setEditingId] = useState<number | null>(null);
 
+    // Form chứa dữ liệu của giao dịch đang thêm/sửa
     const [form, setForm] = useState({
         amount: "",
         category_id: "",
@@ -51,24 +56,28 @@ export default function TransactionPage() {
         note: "",
     });
 
+    // Các bộ lọc tìm kiếm và phân loại giao dịch
     const [filters, setFilters] = useState({
-        search: "",
-        category: "",
-        wallet: "",
-        from: "",
-        to: "",
+        search: "",       // Từ khóa tìm kiếm (theo ghi chú hoặc tên danh mục)
+        category: "",     // Bộ lọc theo danh mục
+        wallet: "",       // Bộ lọc theo ví
+        from: "",         // Lọc từ ngày
+        to: "",           // Lọc đến ngày
     });
 
+    // Lấy JWT Token từ localStorage để xác thực API
     const token =
         typeof window !== "undefined"
             ? localStorage.getItem("token")
             : null;
-    const { t } = useLanguage();
 
+
+    // Tải toàn bộ dữ liệu cần thiết khi component được gắn (mounted)
     useEffect(() => {
         fetchAll();
     }, []);
 
+    // Hàm gọi song song các API để tối ưu tốc độ tải trang
     const fetchAll = async () => {
         await Promise.all([
             fetchTransactions(),
@@ -77,6 +86,7 @@ export default function TransactionPage() {
         ]);
     };
 
+    // Tải danh sách giao dịch từ API
     const fetchTransactions = async () => {
         try {
             setLoading(true);
@@ -94,6 +104,7 @@ export default function TransactionPage() {
         }
     };
 
+    // Tải danh sách danh mục chi tiêu/thu nhập từ API
     const fetchCategories = async () => {
         try {
             const res = await fetch("/api/categories", {
@@ -107,6 +118,7 @@ export default function TransactionPage() {
         }
     };
 
+    // Tải danh sách ví của người dùng từ API
     const fetchWallets = async () => {
         try {
             const res = await fetch("/api/wallets", {
@@ -120,9 +132,9 @@ export default function TransactionPage() {
         }
     };
 
-    // =========================
-    // CREATE + UPDATE
-    // =========================
+    // ==========================================
+    // XỬ LÝ LƯU GIAO DỊCH (THÊM MỚI HOẶC CẬP NHẬT)
+    // ==========================================
     const handleSave = async () => {
         try {
             const isEdit = editingId !== null;
@@ -151,6 +163,7 @@ export default function TransactionPage() {
             setOpenModal(false);
             setEditingId(null);
 
+            // Đưa form về trạng thái trống sau khi lưu thành công
             setForm({
                 amount: "",
                 category_id: "",
@@ -158,30 +171,32 @@ export default function TransactionPage() {
                 note: "",
             });
 
+            // Tải lại danh sách giao dịch mới nhất
             fetchTransactions();
         } catch (err) {
             console.error(err);
         }
     };
 
-    // =========================
-    // EDIT
-    // =========================
+    // ==========================================
+    // CHUẨN BỊ DỮ LIỆU ĐỂ CHỈNH SỬA GIAO DỊCH
+    // ==========================================
     const handleEdit = (t: Transaction) => {
         setEditingId(t.id);
 
-        // tìm category hiện tại
+        // Tìm category tương ứng dựa trên tên và loại
         const currentCategory = categories.find(
             (c) =>
                 c.name === t.category_name &&
                 c.type === t.category_type
         );
 
-        // tìm wallet hiện tại
+        // Tìm ví tương ứng thực hiện giao dịch
         const currentWallet = wallets.find(
             (w) => w.name === t.wallet_name
         );
 
+        // Điền dữ liệu vào form để người dùng chỉnh sửa
         setForm({
             amount: String(t.amount),
             category_id: currentCategory
@@ -196,11 +211,11 @@ export default function TransactionPage() {
         setOpenModal(true);
     };
 
-    // =========================
-    // DELETE
-    // =========================
+    // ==========================================
+    // XỬ LÝ XÓA GIAO DỊCH
+    // ==========================================
     const handleDelete = async (id: number) => {
-        const ok = confirm(t('transactions.confirm_delete'));
+        const ok = confirm('Bạn có chắc muốn xóa giao dịch?');
         if (!ok) return;
 
         try {
@@ -211,6 +226,7 @@ export default function TransactionPage() {
                 },
             });
 
+            // Cập nhật nhanh state tại frontend để không cần gọi lại API tải toàn bộ
             setTransactions((prev) =>
                 prev.filter((t) => t.id !== id)
             );
@@ -219,7 +235,9 @@ export default function TransactionPage() {
         }
     };
 
-    // ===== SUMMARY =====
+    // ===== PHẦN TÍNH TOÁN CÁC CHỈ SỐ TỔNG KẾT TÀI CHÍNH (DÙNG USEMEMO ĐỂ TỐI ƯU) =====
+    
+    // Tính tổng thu nhập trong tháng/tất cả
     const income = useMemo(
         () =>
             transactions
@@ -228,6 +246,7 @@ export default function TransactionPage() {
         [transactions]
     );
 
+    // Tính tổng chi tiêu
     const expense = useMemo(
         () =>
             transactions
@@ -236,6 +255,7 @@ export default function TransactionPage() {
         [transactions]
     );
 
+    // Tính tổng số dư hiện có trên toàn bộ các ví
     const balance = useMemo(
         () =>
             wallets.reduce(
@@ -245,10 +265,12 @@ export default function TransactionPage() {
         [wallets]
     );
 
+    // Lọc danh sách giao dịch dựa trên bộ lọc tìm kiếm
     const filteredTransactions = useMemo(() => {
         return transactions.filter((t) => {
             const keyword = filters.search.toLowerCase();
 
+            // Lọc theo ghi chú hoặc danh mục
             const matchSearch =
                 t.note?.toLowerCase().includes(keyword) ||
                 t.category_name.toLowerCase().includes(keyword);
@@ -320,7 +342,7 @@ export default function TransactionPage() {
                         }}
                         className="bg-cyan-500 text-black px-5 py-2.5 rounded-2xl font-bold hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all duration-200"
                     >
-                        + {t('transactions.new_transaction')}
+                        + Giao dịch mới
                     </button>
                 </div>
 
@@ -422,7 +444,7 @@ export default function TransactionPage() {
                         {/* SEARCH */}
                         <input
                             type="text"
-                            placeholder={t('transactions.search_placeholder')}
+                            placeholder="Tìm ghi chú / danh mục..."
                             value={filters.search}
                             onChange={(e) =>
                                 setFilters({ ...filters, search: e.target.value })
@@ -438,7 +460,7 @@ export default function TransactionPage() {
                             }
                             className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
                         >
-                            <option value="">{t('transactions.all_categories')}</option>
+                            <option value="">Tất cả danh mục</option>
                             {categories.map((c) => (
                                 <option key={c.id} value={c.name}>
                                     {c.icon} {c.name}
@@ -454,7 +476,7 @@ export default function TransactionPage() {
                             }
                             className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
                         >
-                            <option value="">{t('transactions.all_accounts')}</option>
+                            <option value="">Tất cả tài khoản</option>
                             {wallets.map((w) => (
                                 <option key={w.id} value={w.name}>
                                     {w.name}
@@ -488,7 +510,7 @@ export default function TransactionPage() {
                 {loading ? (
                     <p className="text-slate-400">Loading...</p>
                 ) : filteredTransactions.length === 0 ? (
-                    <p className="text-slate-500">{t('transactions.no_transactions')}</p>
+                    <p className="text-slate-500">Chưa có giao dịch</p>
                 ) : (
                     <div className="space-y-3">
                         {filteredTransactions.map((t) => (
@@ -606,10 +628,10 @@ export default function TransactionPage() {
                         <div className="px-6 py-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/20">
                             <div>
                                 <h2 className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                    {isEdit ? t('transactions.edit_title') : t('transactions.add_title')}
+                                    {isEdit ? 'Chỉnh sửa giao dịch' : 'Thêm giao dịch'}
                                 </h2>
                                 <p className="text-xs text-slate-400 mt-1">
-                                    {t('transactions.modal_subtitle')}
+                                    Nhập thông tin giao dịch của bạn
                                 </p>
                             </div>
 
@@ -652,7 +674,7 @@ export default function TransactionPage() {
 
                                 {/* CATEGORY */}
                                 <div>
-                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">{t('transactions.category_label')}</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Danh mục</label>
 
                                     <select
                                         value={form.category_id}
@@ -674,7 +696,7 @@ export default function TransactionPage() {
 
                                 {/* WALLET */}
                                 <div>
-                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">{t('transactions.account_label')}</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">Tài khoản</label>
 
                                     <select
                                         value={form.wallet_id}
@@ -720,14 +742,14 @@ export default function TransactionPage() {
                                 onClick={() => setOpenModal(false)}
                                 className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-800 text-slate-300 font-medium transition-all duration-200 active:scale-95"
                             >
-                                {t('transactions.cancel')}
+                                Hủy
                             </button>
 
                             <button
                                 onClick={handleSave}
                                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/20"
                             >
-                                {isEdit ? t('transactions.update') : t('transactions.save')}
+                                {isEdit ? 'Cập nhật' : 'Lưu giao dịch'}
                             </button>
 
                         </div>

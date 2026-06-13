@@ -14,7 +14,7 @@ import {
     UpdateCategoryBody,
 } from "../types/category.type";
 
-// Create category
+// Dịch vụ tạo danh mục mới
 export const createCategoryService =
     async ({
         user_id,
@@ -26,11 +26,12 @@ export const createCategoryService =
         user_id: number;
     }) => {
 
+        // Kiểm tra thông tin bắt buộc
         if (!name || !type) {
             throw new Error("Thiếu thông tin category");
         }
 
-        // Check duplicate name
+        // Kiểm tra xem danh mục có cùng tên đã tồn tại chưa
         const existingCategory =
             await findCategoryByName({
                 user_id,
@@ -41,7 +42,7 @@ export const createCategoryService =
             throw new Error("Category đã tồn tại");
         }
 
-        // Check duplicate color in same type
+        // Kiểm tra xem màu sắc này đã được sử dụng cho một danh mục khác thuộc cùng loại thu/chi chưa
         if (color) {
 
             const existingColor =
@@ -58,6 +59,7 @@ export const createCategoryService =
             }
         }
 
+        // Tạo danh mục mới trong cơ sở dữ liệu
         return await createCategory({
             user_id,
             name,
@@ -67,7 +69,7 @@ export const createCategoryService =
         });
     };
 
-// Get categories
+// Dịch vụ lấy danh sách danh mục của người dùng
 export const getCategoriesService =
     async (
         user_id: number
@@ -80,7 +82,7 @@ export const getCategoriesService =
 
 
 
-// Delete category
+// Dịch vụ xóa danh mục chi tiêu/thu nhập (xóa mềm)
 export const deleteCategoryService =
     async ({
         user_id,
@@ -91,6 +93,7 @@ export const deleteCategoryService =
         category_id: number;
     }) => {
 
+        // Tìm danh mục cần xóa
         const category =
             await findCategoryById(
                 category_id
@@ -102,7 +105,7 @@ export const deleteCategoryService =
             );
         }
 
-        // Check owner
+        // Đảm bảo người dùng thực hiện xóa chính là người sở hữu danh mục này
         if (
             category.user_id !== user_id
         ) {
@@ -111,9 +114,10 @@ export const deleteCategoryService =
             );
         }
 
+        // Tiến hành xóa mềm trong database
         await softDeleteCategory(
             category_id
         );
 
         return true;
-    };
+    };

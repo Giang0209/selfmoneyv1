@@ -1,224 +1,115 @@
 # 💰 SelfMoney - Personal Finance Management App
 
-SelfMoney là ứng dụng quản lý tài chính cá nhân giúp người dùng theo dõi thu nhập, chi tiêu, quản lý ví tiền, thiết lập ngân sách và xem thống kê tài chính trực quan theo thời gian.
+SelfMoney là ứng dụng quản lý tài chính cá nhân toàn diện và hiện đại, giúp bạn theo dõi chi tiêu, quản lý dòng tiền giữa các ví, lập kế hoạch ngân sách hàng tháng và kiến tạo các mục tiêu tiết kiệm dài hạn bằng một giao diện thông minh, trực quan và bảo mật.
 
 ---
 
-# 🚀 Tính năng chính
+## 🚀 Tính năng nổi bật
 
-## 📊 Dashboard
+### 1. 📊 Dashboard tổng quan tài chính
+- Hiển thị trực quan **Tổng thu nhập**, **Tổng chi tiêu** và **Số dư khả dụng** theo bộ lọc thời gian.
+- Tích hợp biểu đồ xu hướng tài chính động và danh mục chi tiêu phổ biến.
 
-- Tổng quan tài chính
-- Tổng thu nhập
-- Tổng chi tiêu
-- Số dư hiện tại
-- Theo dõi ngân sách
+### 2. 💳 Quản lý nhiều tài khoản ví (Wallets)
+- Tạo lập các ví tiền riêng biệt (Tiền mặt, Ngân hàng Vietcombank, Momo, ...).
+- Ghi nhận hành động nạp tiền trực tiếp từ ví nguồn dưới dạng giao dịch Thu nhập thực tế để đồng bộ báo cáo chính xác.
 
-## 💸 Quản lý giao dịch
+### 3. 💸 Ghi chép & Lịch sử giao dịch (Transactions)
+- Ghi nhận chi tiết mọi giao dịch thu chi kèm theo ví nguồn, phân loại danh mục, ghi chú và mốc thời gian.
+- Bộ lọc nâng cao: Lọc giao dịch theo danh mục, tài khoản ví, tìm kiếm từ khóa ghi chú và khoảng thời gian tùy chỉnh linh hoạt.
 
-- Thêm giao dịch thu nhập
-- Thêm giao dịch chi tiêu
-- Cập nhật giao dịch
-- Xóa giao dịch
-- Xem lịch sử giao dịch
+### 4. 📁 Phân loại danh mục thông minh (Categories)
+- Tạo danh mục chi tiêu/thu nhập với icon và màu sắc đặc trưng.
+- **Smart Tab Auto-Switch**: Tự động chuyển tab thông minh khi tìm kiếm danh mục chéo.
 
-## 💳 Quản lý ví tiền
+### 5. 🧾 Ngân sách & Trợ lý chi tiêu (Smart Budgeting)
+- Lập ngân sách giới hạn chi tiêu hàng tháng cho từng danh mục riêng biệt.
+- **Trợ lý chi tiêu cố định hôm nay**: Đề xuất hạn mức chi tiêu hàng ngày ổn định dựa trên ngân sách còn lại chia cho số ngày còn lại trong tháng.
+- Cảnh báo đỏ `⚠️ Quá hạn mức ngày` trực quan nếu chi tiêu thực tế hôm nay vượt quá ngưỡng khuyến nghị.
 
-- Tạo nhiều ví tiền
-- Theo dõi số dư từng ví
-- Chỉnh sửa thông tin ví
+### 6. 🎯 Mục tiêu tiết kiệm (Saving Goals)
+- Tạo mục tiêu tích lũy tài chính (ví dụ: Mua iPhone 16, Du lịch Nhật Bản...) có số tiền cần đạt và ngày đáo hạn cụ thể.
+- Nạp tiền đóng góp tích lũy từ bất kỳ tài khoản ví nguồn nào.
+- Hiển thị tiến trình bằng biểu đồ tròn trực quan và mở **Celebration Modal** động (hiệu ứng bắn pháo hoa) khi đạt mục tiêu 100% để khích lệ thói quen tích luỹ.
 
-## 📁 Quản lý danh mục
+### 7. 🙈 Chế độ riêng tư bảo mật (Privacy Mode)
+- Chỉ với 1 click vào biểu tượng con mắt (👁️ / 🙈) ở Header, toàn bộ số dư ví, tiền thu/chi, ngân sách và tiến trình tiết kiệm trên toàn ứng dụng sẽ lập tức ẩn đi dưới dạng ký tự `•••• đ`. Trạng thái này được lưu giữ thông qua `localStorage`.
 
-- Danh mục thu nhập
-- Danh mục chi tiêu
-- Tùy chỉnh danh mục
-
-## 🧾 Quản lý ngân sách
-
-- Thiết lập ngân sách theo tháng
-- Theo dõi giới hạn chi tiêu
-- Cảnh báo vượt ngân sách
-
-## 📈 Thống kê tài chính
-
-- Biểu đồ chi tiêu
-- Báo cáo tài chính
-- Phân tích xu hướng
-
-## 🔐 Xác thực người dùng
-
-- Đăng ký
-- Đăng nhập
-- JWT Authentication
-- Mã hóa mật khẩu bằng bcrypt
+### 8. 🌓 Giao diện sáng/tối linh hoạt (Adaptive Light/Dark Theme)
+- Hỗ trợ đổi chế độ sáng/tối (Light/Dark Mode) hoàn chỉnh qua hệ thống CSS Variables. Gam màu nhẹ nhàng, độ tương phản cao, tối ưu chống mỏi mắt.
 
 ---
 
-# 🛠 Tech Stack
+## 🛠 Tech Stack
 
-| Công nghệ | Sử dụng |
-|------------|------------|
-| Framework | Next.js 15 |
-| Language | TypeScript |
-| Database | PostgreSQL |
-| Database Driver | pg |
-| Authentication | JWT |
-| Password Security | bcrypt |
-| Styling | Tailwind CSS |
+- **Framework**: Next.js 16.2.6 (App Router)
+- **Library**: React 19.2.4
+- **Language**: TypeScript
+- **Database**: PostgreSQL (Neon Server)
+- **Database Driver**: `pg` (Node-PostgreSQL)
+- **Authentication**: JWT Token (HttpOnly Cookie-based) & bcrypt password hashing
+- **Styling**: Tailwind CSS v4
 
 ---
 
-# 📂 Cấu trúc thư mục
+## 📂 Cấu trúc dự án
 
-```bash
+```text
 SelfMoney/
-│
 ├── app/
-│   │
-│   ├── (auth)/            # Trang đăng nhập / đăng ký
-│   ├── (main)/            # Trang chính
-│   ├── api/               # API Routes (backend)
+│   ├── (auth)/            # Module Xác thực (Login / Register bằng SĐT & Họ tên)
+│   ├── (main)/            # Trang giao diện chính (Dashboard, Wallets, Transactions, Saving Goals...)
+│   ├── api/               # Backend API routes xử lý CRUD và database
 │   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-│
-├── components/            # UI components
-│
-├── lib/
-│   ├── db.ts              # Kết nối database
-│   └── test_db.ts
-│
-├── modules/               # Chức năng nghiệp vụ
-│
-├── public/                # Static assets
-│
-├── .env
-├── package.json
-├── tsconfig.json
-├── Relation.sql
+│   ├── page.tsx           # Landing Page SaaS cao cấp
+│   └── globals.css        # Hệ thống CSS variables & theme overrides
+├── components/            # Các UI components dùng chung (Header, Sidebar, Toast...)
+├── lib/                   # Xử lý Context toàn cục (Theme, Privacy) và từ điển ngôn ngữ
+├── modules/               # Backend logic theo mô hình Controller - Service - Model - Types
+├── public/                # Lưu trữ các file tĩnh, favicon, logo
+├── Relation.sql           # Schema cấu trúc database PostgreSQL
 └── README.md
 ```
 
 ---
 
-# 📦 Cài đặt và chạy project
+## 📦 Hướng dẫn cài đặt và Chạy cục bộ
 
-## 1. Clone project
-
+### 1. Clone dự án và truy cập thư mục
 ```bash
 git clone https://github.com/LuongHuongGiang20236027/Project-2_selfmoney.git
-
 cd Project-2_selfmoney
 ```
 
-## 2. Cài đặt dependencies
-
+### 2. Cài đặt các gói phụ thuộc (Dependencies)
 ```bash
 npm install
 ```
 
----
-
-## 3. Cấu hình môi trường
-
-Tạo file:
-
+### 3. Thiết lập biến môi trường
+Tạo file `.env` tại thư mục gốc của dự án với nội dung cấu hình sau:
 ```env
-.env
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/selfmoney
+JWT_SECRET=your_jwt_secret_key_here
 ```
 
-Ví dụ:
+### 4. Thiết lập Cơ sở dữ liệu PostgreSQL
+Khởi chạy PostgreSQL, tạo một cơ sở dữ liệu mới và chạy toàn bộ mã lệnh SQL trong file [Relation.sql](file:///d:/Demo_money/Relation.sql) để khởi tạo các bảng `users`, `wallets`, `categories`, `transactions`, `budgets`, `saving_goals`, `saving_contributions` cùng các chỉ mục tối ưu.
 
-```env
-DATABASE_URL=postgresql://postgres:your_password@localhost:5432/selfmoney
-
-JWT_SECRET=your_secret_key
-```
-
----
-
-## 4. Tạo database PostgreSQL
-
-```sql
-CREATE DATABASE selfmoney;
-```
-
-Import file:
-
-```bash
-Relation.sql
-```
-
----
-
-## 5. Chạy project
-
+### 5. Chạy dự án ở chế độ Phát triển (Development Mode)
 ```bash
 npm run dev
 ```
+Ứng dụng sẽ khả dụng cục bộ tại: [http://localhost:3000](http://localhost:3000)
 
-Ứng dụng chạy tại:
-
+### 6. Biên dịch ứng dụng (Production Build)
 ```bash
-http://localhost:3000
+npm run build
+npm run start
 ```
 
 ---
 
-# 📖 Cách sử dụng
+## 👨‍💻 Thông tin phát triển
 
-### 1. Đăng ký / Đăng nhập
-
-- Tạo tài khoản mới
-- Đăng nhập hệ thống
-
-### 2. Dashboard
-
-- Xem tổng quan tài chính
-- Theo dõi số dư
-- Theo dõi ngân sách
-
-### 3. Quản lý giao dịch
-
-- Thêm giao dịch
-- Xóa giao dịch
-- Cập nhật giao dịch
-
-### 4. Quản lý ví tiền
-
-- Tạo ví mới
-- Theo dõi số dư từng ví
-
-### 5. Thống kê
-
-- Xem biểu đồ tài chính
-- Phân tích xu hướng chi tiêu
-
----
-
-# ⚠️ Lưu ý
-
-- PostgreSQL cần được khởi động trước khi chạy project
-- Kiểm tra file `.env`
-- JWT Token được lưu trong localStorage
-- API Backend được xây dựng bằng Next.js API Routes (`app/api`)
-
----
-
-# 👨‍💻 Thông tin dự án
-
-**SelfMoney - Personal Finance Management System**
-
-Phát triển bằng:
-
-- Next.js App Router
-- TypeScript
-- PostgreSQL
-- JWT Authentication
-- Tailwind CSS
-
----
-
-
-Made with ❤️ by Giang
+Được thực hiện với ❤️ bởi **Giang**

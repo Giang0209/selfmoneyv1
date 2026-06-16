@@ -37,7 +37,6 @@ export const updateProfileService =
     async ({
         user_id,
         name,
-        username,
         avatar,
         dob,
         gender,
@@ -50,7 +49,6 @@ export const updateProfileService =
             await updateProfile({
                 user_id,
                 name,
-                username,
                 avatar,
                 dob,
                 gender,

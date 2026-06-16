@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 
 // Khai báo kiểu dữ liệu cho Giao dịch (Transaction)
@@ -37,6 +38,7 @@ type Wallet = {
 };
 
 export default function TransactionPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
     // --- KHAI BÁO CÁC STATE QUẢN LÝ DỮ LIỆU VÀ GIAO DIỆN ---
     const [transactions, setTransactions] = useState<Transaction[]>([]); // Danh sách tất cả giao dịch
     const [categories, setCategories] = useState<Category[]>([]);       // Danh sách danh mục thu/chi
@@ -236,7 +238,7 @@ export default function TransactionPage() {
     };
 
     // ===== PHẦN TÍNH TOÁN CÁC CHỈ SỐ TỔNG KẾT TÀI CHÍNH (DÙNG USEMEMO ĐỂ TỐI ƯU) =====
-    
+
     // Tính tổng thu nhập trong tháng/tất cả
     const income = useMemo(
         () =>
@@ -369,8 +371,8 @@ export default function TransactionPage() {
 
                         <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{income.toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(income, false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-green-500/50 to-transparent group-hover:via-green-400 transition-all duration-300" />
@@ -396,8 +398,8 @@ export default function TransactionPage() {
 
                         <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex items-baseline gap-0.5 tracking-wide">
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{expense.toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(expense, false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent group-hover:via-red-400 transition-all duration-300" />
@@ -428,8 +430,8 @@ export default function TransactionPage() {
                                 }`}
                         >
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{Math.abs(balance).toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
@@ -569,8 +571,8 @@ export default function TransactionPage() {
                                         : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
                                         }`}>
                                         <span className="text-sm font-semibold opacity-85 mr-0.5">{t.category_type === "income" ? "+" : "-"}</span>
-                                        <span className="text-lg font-black tracking-tight">{Number(t.amount).toLocaleString("vi-VN")}</span>
-                                        <span className="text-sm font-semibold opacity-75 ml-0.5">đ</span>
+                                        <span className="text-lg font-black tracking-tight">{formatAmount(t.amount, false)}</span>
+                                        {!isPrivate && <span className="text-sm font-semibold opacity-75 ml-0.5">đ</span>}
                                     </div>
 
                                     {/* Date with subtle calendar icon */}

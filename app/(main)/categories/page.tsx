@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { useToast } from "@/components/Toast";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 
 type Category = {
@@ -23,6 +25,8 @@ type FormState = {
 };
 
 export default function CategoryPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
+    const toast = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -46,6 +50,30 @@ export default function CategoryPage() {
     useEffect(() => {
         setForm((prev) => ({ ...prev, type: tab }));
     }, [tab]);
+
+    useEffect(() => {
+        const query = search.trim().toLowerCase();
+        if (query === "") return;
+
+        // Tìm các kết quả khớp trong tab hiện tại
+        const currentTabMatches = categories.filter(
+            (c) => c.type === tab && c.name.toLowerCase().includes(query)
+        );
+
+        // Nếu tab hiện tại không có kết quả khớp nào
+        if (currentTabMatches.length === 0) {
+            // Tìm xem tab đối diện có kết quả khớp hay không
+            const otherTab = tab === "expense" ? "income" : "expense";
+            const otherTabMatches = categories.filter(
+                (c) => c.type === otherTab && c.name.toLowerCase().includes(query)
+            );
+
+            // Nếu tab đối diện có kết quả khớp, tự động chuyển sang tab đó
+            if (otherTabMatches.length > 0) {
+                setTab(otherTab);
+            }
+        }
+    }, [search, categories, tab]);
 
     // =========================
     // FETCH
@@ -116,17 +144,19 @@ export default function CategoryPage() {
 
             if (!res.ok) {
 
-                alert(json.message);
+                toast.error(json.message || "Tạo danh mục thất bại");
                 return;
             }
 
+            toast.success("Tạo danh mục thành công!");
             setOpen(false);
 
             await fetchCategories();
 
-        } catch (err) {
+        } catch (err: any) {
 
             console.error(err);
+            toast.error(err.message || "Lỗi tạo danh mục");
         }
     };
 
@@ -150,23 +180,28 @@ export default function CategoryPage() {
             const json = await res.json();
 
             if (!res.ok) {
-                alert(json.message);
+                toast.error(json.message || "Xóa danh mục thất bại");
                 return;
             }
 
             setCategories((prev) => prev.filter((c) => c.id !== id));
-        } catch (err) {
+            toast.success("Xóa danh mục thành công!");
+        } catch (err: any) {
             console.error(err);
+            toast.error(err.message || "Lỗi xóa danh mục");
         }
     };
 
     const filtered = categories.filter((c) => {
-        const matchTab = c.type === tab;
-
         const matchSearch =
             c.name.toLowerCase().includes(search.toLowerCase());
 
-        return matchTab && matchSearch;
+        // Nếu có từ khoá tìm kiếm, tìm trên toàn bộ danh mục (bỏ qua tab Chi tiêu / Thu nhập)
+        if (search.trim() !== "") {
+            return matchSearch;
+        }
+
+        return c.type === tab;
     });
 
     const expenseIcons = ["🍴", "🏠", "🚌", "🏥", "🛍️", "🎓", "🎭", "🏋️", "✈️", "🐾", "📱", "🧾"];
@@ -174,8 +209,7 @@ export default function CategoryPage() {
 
     const colors = ["#06b6d4", "#f97316", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ec4899", "#ef4444", "#6366f1", "#d946ef", "#f59e0b", "#84cc16", "#14b8a6", "#64748b"];
 
-    const formatMoney = (v: number) =>
-        Math.round(v).toLocaleString("vi-VN") + " đ";
+    const formatMoney = (v: number) => formatAmount(v);
 
     return (
         <div className="bg-background min-h-screen text-foreground relative overflow-hidden transition-colors duration-300">
@@ -208,21 +242,32 @@ export default function CategoryPage() {
                 </div>
 
                 {/* SEARCH & FILTER */}
-                <div className="mb-6 flex items-center justify-between gap-4">
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm danh mục..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full md:w-80 bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                    />
+                <div className="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    {/* SEARCH */}
+                    <div className="relative flex items-center flex-1 max-w-sm">
+                        <span className="absolute left-4 text-slate-500 pointer-events-none">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </span>
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Tìm kiếm danh mục..."
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-2xl pl-11 pr-4 py-3 text-slate-200 placeholder-slate-500 transition-all duration-300 shadow-inner text-sm font-medium"
+                        />
+                    </div>
 
                     {/* BUTTON */}
                     <button
                         onClick={openCreate}
-                        className="bg-cyan-500 text-black px-5 py-3 rounded-xl font-bold hover:bg-cyan-400 transition whitespace-nowrap"
+                        className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/10 flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                     >
-                        + Danh mục mới
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm danh mục mới
                     </button>
                 </div>
 
@@ -251,107 +296,135 @@ export default function CategoryPage() {
 
                 {/* GRID */}
                 {loading ? (
-                    <p className="text-slate-400">Loading...</p>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin" />
+                    </div>
                 ) : (
                     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
                         {filtered.map((item) => (
                             <div
                                 key={item.id}
-                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between h-[260px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
                             >
+                                {/* Background glow decoration matching category color */}
+                                <div
+                                    className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-3xl opacity-10 pointer-events-none transition-all duration-500 group-hover:opacity-20"
+                                    style={{
+                                        background: `radial-gradient(circle, ${item.color || "#06b6d4"} 0%, transparent 70%)`
+                                    }}
+                                />
+
                                 <div>
-                                    <div className="flex gap-4 items-start mb-5">
-                                        {/* Icon with radial glow */}
-                                        <div className="relative select-none flex-shrink-0">
-                                            {/* Color glow backdrop */}
-                                            <div
-                                                className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300 animate-pulse"
-                                                style={{ backgroundColor: item.color || "#06b6d4" }}
-                                            />
-                                            <div
-                                                className="relative w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
-                                                style={{
-                                                    color: item.color || "#06b6d4",
-                                                    backgroundColor: `${item.color || "#06b6d4"}15`,
-                                                    borderColor: `${item.color || "#06b6d4"}35`,
-                                                }}
-                                            >
-                                                <span className="text-3xl">{item.icon || "📁"}</span>
+                                    <div className="flex items-center justify-between mb-4 relative z-10">
+                                        <div className="flex items-center gap-3.5">
+                                            {/* Icon with radial glow */}
+                                            <div className="relative select-none flex-shrink-0">
+                                                {/* Color glow backdrop */}
+                                                <div
+                                                    className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300 animate-pulse"
+                                                    style={{ backgroundColor: item.color || "#06b6d4" }}
+                                                />
+                                                <div
+                                                    className="relative w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
+                                                    style={{
+                                                        color: item.color || "#06b6d4",
+                                                        backgroundColor: `${item.color || "#06b6d4"}15`,
+                                                        borderColor: `${item.color || "#06b6d4"}35`,
+                                                    }}
+                                                >
+                                                    <span className="text-2xl leading-none">{item.icon || "📁"}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Header text container */}
+                                            <div className="min-w-0">
+                                                <h3 className="font-extrabold text-base text-slate-100 group-hover:text-white transition-colors duration-200 truncate">
+                                                    {item.name}
+                                                </h3>
+
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit ${item.type === "income"
+                                                            ? "text-green-400 group-hover:border-green-500/30"
+                                                            : "text-rose-400 group-hover:border-rose-500/30"
+                                                        }`}>
+                                                        {item.type === "income" ? 'Thu nhập' : 'Chi tiêu'}
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                        {item.created_at
+                                                            ? new Date(item.created_at).toLocaleDateString("vi-VN")
+                                                            : 'Danh mục'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Right text container */}
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-extrabold text-lg text-slate-100 group-hover:text-white transition-colors duration-200 truncate">
-                                                {item.name}
-                                            </h3>
-
-                                            <div className="mt-1.5">
-                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit ${item.type === "income"
-                                                        ? "text-green-400 group-hover:border-green-500/30"
-                                                        : "text-rose-400 group-hover:border-rose-500/30"
-                                                    }`}>
-                                                    {item.type === "income" ? 'Thu nhập' : 'Chi tiêu'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4">
-                                    <p className="text-xs uppercase text-slate-500 mb-1 font-semibold tracking-wider">
-                                        Tổng giao dịch
-                                    </p>
-
-                                    <p
-                                        className={`text-3xl font-sans tabular-nums flex items-baseline gap-0.5 transition-all duration-300 ${item.type === "income"
-                                            ? "text-green-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-green-300"
-                                            : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
-                                            }`}
-                                    >
-                                        <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{item.type === "income" ? "+" : "-"}</span>
-                                        <span className="text-3xl font-black tracking-tight leading-none">{Number(item.total_amount || 0).toLocaleString("vi-VN")}</span>
-                                        <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
-                                    </p>
-
-                                    <div className="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center h-8">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                            {item.created_at
-                                                ? new Date(item.created_at).toLocaleDateString("vi-VN")
-                                                : 'Danh mục'}
-                                        </span>
-                                        {/* Slide-in and fade-in Actions */}
-                                        <div className="flex gap-2 opacity-0 translate-x-3 scale-95 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100 transition-all duration-300 origin-right">
+                                        {/* Actions (trash button) on top-right */}
+                                        <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200 relative z-20">
                                             <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="text-slate-400 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-slate-800/80"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(item.id);
+                                                }}
+                                                className="text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 border border-slate-850 hover:border-rose-500/20 p-2 rounded-xl transition duration-200"
                                                 title="Xóa danh mục"
                                             >
-                                                🗑️
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Total transaction footer */}
+                                <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end">
+                                    <div className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">
+                                        Tổng giao dịch
+                                    </div>
+
+                                    <p
+                                        className={`text-3xl font-black font-sans tabular-nums flex items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${item.type === "income"
+                                            ? "text-green-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-green-300"
+                                            : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
+                                            }`}
+                                    >
+                                        <span className="text-lg font-bold mr-0.5">{item.type === "income" ? "+" : "-"}</span>
+                                        <span className="tracking-tight truncate">{formatAmount(Number(item.total_amount || 0), false)}</span>
+                                        {!isPrivate && <span className="text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
+                                    </p>
+                                </div>
+
+                                <div className="absolute bottom-0 left-0 h-[1.5px] w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent group-hover:via-cyan-400 transition-all duration-300"
+                                     style={{
+                                         background: `linear-gradient(to right, transparent, ${item.color || "#06b6d4"}60, transparent)`
+                                     }}
+                                />
                             </div>
                         ))}
 
                         {/* ADD BUTTON */}
                         <button
                             onClick={openCreate}
-                            className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 border border-slate-800 border-dashed rounded-3xl p-6 h-[260px]
-                                flex flex-col items-center justify-center
-                                hover:border-cyan-400/60 hover:bg-slate-800/40 transition-all duration-300 group"
+                            className="bg-gradient-to-br from-slate-950/20 to-slate-900/20 border border-slate-800/80 border-dashed rounded-3xl p-6 min-h-[220px] h-full
+                                flex flex-col items-center justify-center relative overflow-hidden
+                                hover:border-cyan-500/50 hover:bg-slate-900/30 transition-all duration-300 group"
                         >
-                            <div className="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
-                                +
+                            {/* Hover decoration glows */}
+                            <div className="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/15 transition-all duration-300" />
+                            <div className="absolute -bottom-12 -left-12 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl group-hover:bg-violet-500/15 transition-all duration-300" />
+
+                            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
                             </div>
 
-                            <p className="font-bold text-white text-lg">
+                            <p className="font-bold text-slate-200 group-hover:text-white transition-colors duration-250 text-sm">
                                 Thêm danh mục
                             </p>
 
-                            <p className="text-xs text-slate-400 mt-1 text-center max-w-[200px]">
+                            <p className="text-xs text-slate-500 mt-1 text-center max-w-[180px] leading-relaxed group-hover:text-slate-400 transition-colors duration-250">
                                 Tạo danh mục mới cho thu nhập hoặc chi tiêu
                             </p>
                         </button>

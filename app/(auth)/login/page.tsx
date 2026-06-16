@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/Toast";
 
 export default function LoginPage() {
 
     const router = useRouter();
+    const toast = useToast();
 
     const [phone, setPhone] =
         useState("");
@@ -28,7 +30,7 @@ export default function LoginPage() {
 
         // Validate
         if (!phone || !password) {
-            alert(
+            toast.warning(
                 "Vui lòng nhập đầy đủ thông tin"
             );
             return;
@@ -61,7 +63,7 @@ export default function LoginPage() {
 
             if (!res.ok) {
 
-                alert(
+                toast.error(
                     data.message ||
                     "Đăng nhập thất bại"
                 );
@@ -84,7 +86,7 @@ export default function LoginPage() {
 
             if (!token) {
 
-                alert(
+                toast.error(
                     "Không lấy được token"
                 );
 
@@ -97,7 +99,7 @@ export default function LoginPage() {
                 token
             );
 
-            alert(
+            toast.success(
                 "Đăng nhập thành công"
             );
 
@@ -109,7 +111,7 @@ export default function LoginPage() {
 
             console.error(error);
 
-            alert(
+            toast.error(
                 "Có lỗi xảy ra khi đăng nhập"
             );
 

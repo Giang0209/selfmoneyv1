@@ -4,8 +4,6 @@
 export interface UpdateProfileBody {
     name?: string; // Họ tên hiển thị mới (tùy chọn)
 
-    username?: string; // Tên đăng nhập mới (tùy chọn)
-
     avatar?: string; // URL ảnh đại diện mới (tùy chọn)
 
     dob?: string; // Ngày sinh mới (tùy chọn)

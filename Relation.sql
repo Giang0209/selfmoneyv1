@@ -3,8 +3,6 @@ CREATE TABLE users (
 
     phone VARCHAR(20) UNIQUE NOT NULL,
 
-    username VARCHAR(50) UNIQUE,
-
     name VARCHAR(100),
 
     password_hash TEXT NOT NULL,

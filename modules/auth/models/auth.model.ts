@@ -5,7 +5,6 @@ import pool from "@/lib/db";
 // Thêm bản ghi người dùng mới vào cơ sở dữ liệu
 export const createUser = async ({
     phone,
-    username,
     name,
     password_hash,
     avatar,
@@ -13,8 +12,6 @@ export const createUser = async ({
     gender,
 }: {
     phone: string;
-
-    username?: string;
 
     name?: string;
 
@@ -31,7 +28,6 @@ export const createUser = async ({
         `
         INSERT INTO users (
             phone,
-            username,
             name,
             password_hash,
             avatar,
@@ -39,12 +35,11 @@ export const createUser = async ({
             gender
         )
 
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6)
 
         RETURNING
             id,
             phone,
-            username,
             name,
             avatar,
             dob,
@@ -53,7 +48,6 @@ export const createUser = async ({
         `,
         [
             phone,
-            username || null,
             name || null,
             password_hash,
             avatar || null,
@@ -92,7 +86,6 @@ export const findUserById =
             SELECT
                 id,
                 phone,
-                username,
                 name,
                 avatar,
                 dob,

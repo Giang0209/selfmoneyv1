@@ -65,9 +65,6 @@ export const updateProfileController =
                     name:
                         body.name,
 
-                    username:
-                        body.username,
-
                     avatar:
                         body.avatar,
 

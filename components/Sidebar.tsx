@@ -34,7 +34,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    router.replace("/login");
+    router.replace("/");
   };
 
   const getIconInfo = (href: string) => {

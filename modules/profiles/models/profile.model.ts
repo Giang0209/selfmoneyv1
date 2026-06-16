@@ -11,7 +11,6 @@ export const getProfileById =
             SELECT
                 id,
                 phone,
-                username,
                 name,
                 avatar,
                 dob::text, -- Ép kiểu ngày sinh sang chuỗi văn bản để hiển thị dạng YYYY-MM-DD
@@ -52,7 +51,6 @@ export const getPasswordByUserId =
 export const updateProfile = async ({
     user_id,
     name,
-    username,
     avatar,
     dob,
     gender,
@@ -60,8 +58,6 @@ export const updateProfile = async ({
     user_id: number;
 
     name?: string;
-
-    username?: string;
 
     avatar?: string;
 
@@ -77,20 +73,17 @@ export const updateProfile = async ({
         SET
             name = COALESCE($1, name), -- Sử dụng giá trị mới nếu được truyền lên, ngược lại giữ nguyên giá trị cũ
 
-            username = COALESCE($2, username),
+            avatar = COALESCE($2, avatar),
 
-            avatar = COALESCE($3, avatar),
+            dob = COALESCE($3, dob),
 
-            dob = COALESCE($4, dob),
+            gender = COALESCE($4, gender)
 
-            gender = COALESCE($5, gender)
-
-        WHERE id = $6
+        WHERE id = $5
 
         RETURNING
             id,
             phone,
-            username,
             name,
             avatar,
             dob,
@@ -99,7 +92,6 @@ export const updateProfile = async ({
         `,
         [
             name || null,
-            username || null,
             avatar || null,
             dob || null,
             gender || null,

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { useToast } from "@/components/Toast";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 type Budget = {
     id: number;
@@ -41,6 +43,8 @@ type FormState = {
 };
 
 export default function BudgetsPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
+    const toast = useToast();
 
     // ================= REAL DATA =================
     const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -195,18 +199,19 @@ export default function BudgetsPage() {
 
             if (!res.ok) {
 
-                alert(json.message || "Xóa thất bại");
+                toast.error(json.message || "Xóa thất bại");
                 return;
             }
 
             setBudgets((prev) =>
                 prev.filter((b) => b.id !== id)
             );
+            toast.success("Xóa ngân sách thành công!");
 
         } catch (err) {
 
             console.error(err);
-            alert("Lỗi hệ thống");
+            toast.error("Lỗi hệ thống");
         }
     };
 
@@ -327,8 +332,94 @@ export default function BudgetsPage() {
         search,
     ]);
 
-    const formatMoney = (v: number) =>
-        Math.round(v).toLocaleString("vi-VN") + " đ";
+    const smartAssistantData = useMemo(() => {
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+
+        const totalLimit = budgetView
+            .filter((b) => b.month === month && b.year === year)
+            .reduce((sum, b) => sum + b.limit, 0);
+
+        const totalSpent = budgetView
+            .filter((b) => b.month === month && b.year === year)
+            .reduce((sum, b) => sum + b.spent, 0);
+
+        const remainingBudget = totalLimit - totalSpent;
+
+        let remainingDays = 0;
+        let isPast = false;
+        let isFuture = false;
+
+        const totalDaysInMonth = new Date(year, month, 0).getDate();
+
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            isPast = true;
+            remainingDays = 0;
+        } else if (year > currentYear || (year === currentYear && month > currentMonth)) {
+            isFuture = true;
+            remainingDays = totalDaysInMonth;
+        } else {
+            remainingDays = totalDaysInMonth - today.getDate() + 1;
+        }
+
+        const isCurrentMonth = month === currentMonth && year === currentYear;
+
+        // Calculate today's spending for categories with budgets in the selected month
+        const budgetedCategoryIds = new Set(
+            budgetView
+                .filter((b) => b.month === month && b.year === year)
+                .map((b) => b.category_id)
+        );
+
+        const todaySpent = isCurrentMonth
+            ? transactions
+                .filter((t) => {
+                    const tDate = new Date(t.transaction_date);
+                    const isToday =
+                        tDate.getDate() === today.getDate() &&
+                        tDate.getMonth() === today.getMonth() &&
+                        tDate.getFullYear() === today.getFullYear();
+                    return (
+                        isToday &&
+                        t.category_type === "expense" &&
+                        budgetedCategoryIds.has(t.category_id)
+                    );
+                })
+                .reduce((sum, t) => sum + Number(t.amount), 0)
+            : 0;
+
+        // Daily limit logic:
+        // Budget before today's spending = remainingBudget + todaySpent (which is exactly totalLimit - totalSpent + todaySpent)
+        const budgetBeforeToday = remainingBudget + todaySpent;
+
+        // Daily limit is calculated as (budgetBeforeToday) / (remainingDays including today)
+        // This makes it fixed for the duration of today, unaffected by today's transactions.
+        let dailyLimit = 0;
+        if (isCurrentMonth) {
+            dailyLimit = remainingDays > 0 ? Math.max(0, budgetBeforeToday / remainingDays) : 0;
+        } else if (isFuture) {
+            dailyLimit = totalDaysInMonth > 0 ? Math.max(0, totalLimit / totalDaysInMonth) : 0;
+        } else {
+            dailyLimit = 0; // Past month has ended
+        }
+
+        const isTodayOverspent = isCurrentMonth && todaySpent > dailyLimit;
+
+        return {
+            totalLimit,
+            totalSpent,
+            remainingBudget,
+            remainingDays,
+            dailyLimit,
+            todaySpent,
+            isTodayOverspent,
+            isPast,
+            isFuture,
+        };
+    }, [budgetView, month, year, transactions]);
+
+    const formatMoney = (v: number) => formatAmount(v);
 
     const getPercent = (
         spent: number,
@@ -354,7 +445,7 @@ export default function BudgetsPage() {
                 !form.limit
             ) {
 
-                alert(
+                toast.warning(
                     "Vui lòng nhập đủ dữ liệu"
                 );
 
@@ -397,7 +488,7 @@ export default function BudgetsPage() {
 
             if (!res.ok) {
 
-                alert(
+                toast.error(
                     json.message ||
                     "Lưu thất bại"
                 );
@@ -405,7 +496,7 @@ export default function BudgetsPage() {
                 return;
             }
 
-            alert(
+            toast.success(
                 isEdit
                     ? "Cập nhật ngân sách thành công"
                     : "Tạo ngân sách thành công"
@@ -433,7 +524,7 @@ export default function BudgetsPage() {
         } catch (err) {
 
             console.error(err);
-            alert("Lỗi hệ thống");
+            toast.error("Lỗi hệ thống");
 
         } finally {
 
@@ -443,7 +534,7 @@ export default function BudgetsPage() {
 
     const handleSurplusTransfer = async () => {
         if (!surplusTargetGoalId || !surplusAmount || !surplusWalletId) {
-            alert("Vui lòng chọn mục tiêu, ví nguồn và nhập số tiền");
+            toast.warning("Vui lòng chọn mục tiêu, ví nguồn và nhập số tiền");
             return;
         }
         const token = localStorage.getItem("token");
@@ -464,14 +555,14 @@ export default function BudgetsPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Chuyển tiền thất bại");
 
-            alert("Chuyển dư ngân sách vào mục tiêu tiết kiệm thành công!");
+            toast.success("Chuyển dư ngân sách vào mục tiêu tiết kiệm thành công!");
             setSurplusModal(false);
             setSurplusTargetGoalId("");
             setSurplusWalletId("");
             setSelectedSurplusBudget(null);
             await fetchAll();
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         } finally {
             setTransferringSurplus(false);
         }
@@ -514,88 +605,235 @@ export default function BudgetsPage() {
                     </button>
                 </div>
 
-                {/* FILTER */}
-                <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 mb-6 space-y-4">
+                {/* SMART SPENDING ASSISTANT WIDGET */}
+                <div className="bg-slate-950/30 border border-slate-800 rounded-3xl p-6 mb-8 relative overflow-hidden backdrop-blur-xl">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none animate-pulse-glow" />
+                    
+                    <div className="flex items-center gap-2 mb-5">
+                        <span className="text-xl">✨</span>
+                        <h2 className="text-sm font-extrabold tracking-wider uppercase text-cyan-400 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                            Trợ lý Chi tiêu Thông minh
+                        </h2>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Remaining Budget Card */}
+                        <div className="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-slate-700">
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Tổng ngân sách còn lại
+                            </div>
+                            <div className={`text-2xl font-black font-sans tabular-nums tracking-tight ${
+                                smartAssistantData.remainingBudget < 0 ? "text-rose-500" : "text-slate-100"
+                            }`}>
+                                {formatMoney(smartAssistantData.remainingBudget)}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                                {smartAssistantData.isPast 
+                                    ? "Tháng này đã khép lại" 
+                                    : smartAssistantData.isFuture 
+                                    ? `Ngân sách dự kiến (cho ${smartAssistantData.remainingDays} ngày)` 
+                                    : `Số ngày còn lại trong tháng: ${smartAssistantData.remainingDays} ngày`}
+                            </p>
+                        </div>
 
-                        <select
-                            value={category}
-                            onChange={(e) =>
-                                setCategory(
-                                    e.target.value
-                                )
-                            }
-                            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                        >
-                            <option value="all">
-                                Tất cả danh mục
-                            </option>
+                        {/* Daily Limit Card */}
+                        <div className={`bg-slate-950/40 border rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-slate-700 ${
+                            smartAssistantData.isTodayOverspent && !smartAssistantData.isPast
+                                ? "border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.05)]"
+                                : "border-slate-800/80"
+                        }`}>
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Hạn mức chi tiêu hôm nay
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="text-2xl font-black text-emerald-400 font-sans tabular-nums tracking-tight">
+                                    {formatMoney(smartAssistantData.dailyLimit)}
+                                </div>
+                                {smartAssistantData.isTodayOverspent && !smartAssistantData.isPast && (
+                                    <span className="text-[10px] font-extrabold text-rose-500 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/20 uppercase tracking-wider whitespace-nowrap">
+                                        ⚠️ Vượt hạn mức
+                                    </span>
+                                )}
+                            </div>
 
-                            {categories
-                                .filter(
-                                    (c) =>
-                                        c.type ===
-                                        "expense"
-                                )
-                                .map((c) => (
-                                    <option
-                                        key={c.id}
-                                        value={c.id}
-                                    >
-                                        {c.icon}{" "}
-                                        {c.name}
-                                    </option>
-                                ))}
-                        </select>
+                            {!smartAssistantData.isPast && (
+                                <div className="mt-3 pt-3 border-t border-slate-800/50 flex justify-between items-center text-xs">
+                                    <span className="text-slate-400">Đã chi tiêu hôm nay:</span>
+                                    <span className={`font-bold font-mono ${
+                                        smartAssistantData.isTodayOverspent ? "text-rose-500 font-extrabold" : "text-slate-200"
+                                    }`}>
+                                        {formatMoney(smartAssistantData.todaySpent)}
+                                    </span>
+                                </div>
+                            )}
 
-                        <select
-                            value={month}
-                            onChange={(e) =>
-                                setMonth(
-                                    Number(
-                                        e.target.value
-                                    )
-                                )
-                            }
-                            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                        >
-                            {Array.from({
-                                length: 12,
-                            }).map((_, i) => (
-                                <option
-                                    key={i}
-                                    value={i + 1}
-                                >
-                                    Tháng {i + 1}
-                                </option>
-                            ))}
-                        </select>
+                            <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                                {smartAssistantData.isPast 
+                                    ? "Đã kết thúc chu kỳ chi tiêu" 
+                                    : "Mức chi tiêu đề xuất trong ngày hôm nay"}
+                            </p>
+                        </div>
+                    </div>
 
+                    {/* Tip banner */}
+                    <div className={`mt-4 p-3.5 rounded-2xl border text-xs font-medium flex items-start gap-2.5 transition-all duration-300 ${
+                        smartAssistantData.totalLimit === 0
+                            ? "bg-slate-900/40 border-slate-850 text-slate-400"
+                            : smartAssistantData.isPast
+                            ? "bg-slate-900/40 border-slate-850 text-slate-400"
+                            : smartAssistantData.remainingBudget < 0
+                            ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                            : smartAssistantData.isTodayOverspent
+                            ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                            : smartAssistantData.dailyLimit < 50000
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            : smartAssistantData.dailyLimit >= 150000
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                            : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
+                    }`}>
+                        <span className="text-base flex-shrink-0 leading-none">
+                            {smartAssistantData.totalLimit === 0
+                                ? "💡"
+                                : smartAssistantData.isPast
+                                ? "📅"
+                                : (smartAssistantData.remainingBudget < 0 || smartAssistantData.isTodayOverspent)
+                                ? "⚠️"
+                                : smartAssistantData.dailyLimit < 50000
+                                ? "⚠️"
+                                : smartAssistantData.dailyLimit >= 150000
+                                ? "✨"
+                                : "💡"}
+                        </span>
+                        <div>
+                            {smartAssistantData.totalLimit === 0 ? (
+                                "Bạn chưa thiết lập ngân sách nào cho tháng này. Hãy bấm '+ Tạo ngân sách' để bắt đầu lập kế hoạch chi tiêu thông minh!"
+                            ) : smartAssistantData.isPast ? (
+                                `Tháng này đã kết thúc với số dư ngân sách là: ${formatMoney(smartAssistantData.remainingBudget)}.`
+                            ) : smartAssistantData.remainingBudget < 0 ? (
+                                `Ngân sách tháng này đã bị vượt hạn mức ${formatMoney(Math.abs(smartAssistantData.remainingBudget))}! Hãy thắt chặt chi tiêu tối đa để tránh mất cân đối tài chính.`
+                            ) : smartAssistantData.isTodayOverspent ? (
+                                `Cảnh báo: Hôm nay bạn đã chi tiêu ${formatMoney(smartAssistantData.todaySpent)}, vượt hạn mức chi tiêu hôm nay (${formatMoney(smartAssistantData.dailyLimit)}). Chi tiêu hôm nay chưa hợp lý!`
+                            ) : smartAssistantData.dailyLimit < 50000 ? (
+                                `Hạn mức chi tiêu hôm nay còn rất thấp (${formatMoney(smartAssistantData.dailyLimit)}). Khuyến nghị bạn chỉ chi tiêu cho các nhu cầu cực kỳ thiết yếu.`
+                            ) : smartAssistantData.dailyLimit >= 150000 ? (
+                                `Tài chính của bạn đang rất khỏe mạnh! Bạn có thể chi tiêu thoải mái trong hạn mức an toàn ${formatMoney(smartAssistantData.dailyLimit)} cho ngày hôm nay.`
+                            ) : (
+                                `Bạn đang kiểm soát ngân sách rất tốt. Duy trì mức chi tiêu dưới ${formatMoney(smartAssistantData.dailyLimit)} để đạt mục tiêu tiết kiệm tháng này.`
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* FILTER SECTION */}
+                <div className="bg-slate-950/30 border border-slate-800 rounded-3xl p-5 mb-8 space-y-4 backdrop-blur-xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+                    
+                    {/* Top Row: Search Input */}
+                    <div className="relative flex items-center">
+                        <span className="absolute left-4 text-slate-500 pointer-events-none">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </span>
                         <input
-                            type="number"
-                            value={year}
-                            onChange={(e) =>
-                                setYear(
-                                    Number(
-                                        e.target.value
-                                    )
-                                )
-                            }
-                            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 text-center outline-none transition text-slate-200"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Tìm kiếm danh mục hoặc ghi chú ngân sách..."
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-2xl pl-11 pr-4 py-3.5 outline-none transition text-slate-200 placeholder-slate-500 text-sm font-medium shadow-inner"
                         />
                     </div>
 
-                    <input
-                        value={search}
-                        onChange={(e) =>
-                            setSearch(
-                                e.target.value
-                            )
-                        }
-                        placeholder="Tìm kiếm..."
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                    />
+                    {/* Bottom Row: 3 Filters Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Category Select */}
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-slate-500 pointer-events-none">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </span>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="appearance-none w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-2xl pl-11 pr-10 py-3.5 outline-none transition text-slate-200 cursor-pointer text-sm font-medium shadow-inner"
+                            >
+                                <option value="all" className="bg-slate-950 text-slate-400">
+                                    Tất cả danh mục
+                                </option>
+                                {categories
+                                    .filter((c) => c.type === "expense")
+                                    .map((c) => (
+                                        <option key={c.id} value={c.id} className="bg-slate-950 text-slate-200">
+                                            {c.icon} {c.name}
+                                        </option>
+                                    ))}
+                            </select>
+                            <div className="absolute right-4 pointer-events-none text-slate-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Month Select */}
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-slate-500 pointer-events-none">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </span>
+                            <select
+                                value={month}
+                                onChange={(e) => setMonth(Number(e.target.value))}
+                                className="appearance-none w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-2xl pl-11 pr-10 py-3.5 outline-none transition text-slate-200 cursor-pointer text-sm font-medium shadow-inner"
+                            >
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <option key={i} value={i + 1} className="bg-slate-950 text-slate-200">
+                                        Tháng {i + 1}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 pointer-events-none text-slate-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Year Select */}
+                        <div className="relative flex items-center">
+                            <span className="absolute left-4 text-slate-500 pointer-events-none">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </span>
+                            <select
+                                value={year}
+                                onChange={(e) => setYear(Number(e.target.value))}
+                                className="appearance-none w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-2xl pl-11 pr-10 py-3.5 outline-none transition text-slate-200 cursor-pointer text-sm font-medium shadow-inner"
+                            >
+                                {Array.from({ length: 9 }).map((_, i) => {
+                                    const y = now.getFullYear() - 4 + i;
+                                    return (
+                                        <option key={y} value={y} className="bg-slate-950 text-slate-200">
+                                            Năm {y}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                            <div className="absolute right-4 pointer-events-none text-slate-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* GRID */}
@@ -639,11 +877,11 @@ export default function BudgetsPage() {
 
                                     <div className="flex justify-between text-base mb-2 mt-6 items-baseline">
                                         <span className="text-slate-400 font-sans tabular-nums">
-                                            <span className="font-semibold text-slate-200 text-base">{Math.round(b.spent).toLocaleString("vi-VN")}</span>
-                                            <span className="opacity-75 ml-0.5 mr-1.5">đ</span>
+                                            <span className="font-semibold text-slate-200 text-base">{formatAmount(b.spent, false)}</span>
+                                            {!isPrivate && <span className="opacity-75 ml-0.5 mr-1.5">đ</span>}
                                             <span className="text-base text-slate-600 font-normal mx-1">/</span>
-                                            <span className="font-semibold text-slate-500 text-base">{Math.round(b.limit).toLocaleString("vi-VN")}</span>
-                                            <span className="opacity-75 ml-0.5">đ</span>
+                                            <span className="font-semibold text-slate-500 text-base">{formatAmount(b.limit, false)}</span>
+                                            {!isPrivate && <span className="opacity-75 ml-0.5">đ</span>}
                                         </span>
 
                                         <span className="font-bold font-sans tabular-nums text-base" style={{ color: b.color || "#06b6d4" }}>

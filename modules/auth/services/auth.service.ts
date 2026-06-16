@@ -32,7 +32,6 @@ const passwordRegex =
 export const registerService = async ({
     phone,
     password,
-    username,
     name,
     avatar,
     dob,
@@ -69,7 +68,6 @@ export const registerService = async ({
     // Lưu người dùng mới vào cơ sở dữ liệu
     const user = await createUser({
         phone,
-        username,
         name,
         password_hash,
         avatar,
@@ -134,7 +132,6 @@ export const loginService = async ({
         user: {
             id: user.id,
             phone: user.phone,
-            username: user.username,
             name: user.name,
             avatar: user.avatar,
             dob: user.dob,

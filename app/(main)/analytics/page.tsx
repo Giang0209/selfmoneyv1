@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 import {
     LineChart,
@@ -48,6 +49,7 @@ type Budget = {
 };
 
 export default function AnalyticsPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
 
     const now = new Date();
 
@@ -557,14 +559,18 @@ export default function AnalyticsPage() {
                 arr.push({
                     type: "warning",
                     title: `Vượt hạn mức ${categoryName}`,
-                    desc: `Danh mục "${categoryName}" đã chi tiêu vượt ${percent - 100}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
+                    desc: isPrivate
+                        ? `Danh mục "${categoryName}" đã chi tiêu vượt ${percent - 100}% hạn mức (Đã tiêu: •••• đ / Hạn mức: •••• đ).`
+                        : `Danh mục "${categoryName}" đã chi tiêu vượt ${percent - 100}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
                 });
             } else if (percent >= 80) {
                 hasOverBudget = true;
                 arr.push({
                     type: "warning",
                     title: `Sắp vượt hạn mức ${categoryName}`,
-                    desc: `Danh mục "${categoryName}" đã dùng ${percent}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
+                    desc: isPrivate
+                        ? `Danh mục "${categoryName}" đã dùng ${percent}% hạn mức (Đã tiêu: •••• đ / Hạn mức: •••• đ).`
+                        : `Danh mục "${categoryName}" đã dùng ${percent}% hạn mức (Đã tiêu: ${spent.toLocaleString("vi-VN")}đ / Hạn mức: ${budgetAmount.toLocaleString("vi-VN")}đ).`,
                 });
             }
         });
@@ -590,7 +596,9 @@ export default function AnalyticsPage() {
                 arr.push({
                     type: "warning",
                     title: `${wallet.icon} ${wallet.name} sắp hết tiền`,
-                    desc: `Số dư chỉ còn ${balance.toLocaleString()}đ.`,
+                    desc: isPrivate
+                        ? "Số dư chỉ còn •••• đ."
+                        : `Số dư chỉ còn ${balance.toLocaleString()}đ.`,
                 });
             }
         });
@@ -686,8 +694,8 @@ export default function AnalyticsPage() {
 
                             <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
                                 <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
-                                <span className="text-3xl font-black tracking-tight leading-none">{totalIncome.toLocaleString("vi-VN")}</span>
-                                <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                                <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalIncome, false)}</span>
+                                {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                             </h2>
                         </div>
 
@@ -724,8 +732,8 @@ export default function AnalyticsPage() {
 
                             <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)] flex items-baseline gap-0.5 tracking-wide">
                                 <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
-                                <span className="text-3xl font-black tracking-tight leading-none">{totalExpense.toLocaleString("vi-VN")}</span>
-                                <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                                <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
+                                {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                             </h2>
                         </div>
 
@@ -761,8 +769,8 @@ export default function AnalyticsPage() {
                             </p>
 
                             <h2 className="text-3xl font-sans tabular-nums text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.1)] flex items-baseline gap-0.5 tracking-wide">
-                                <span className="text-3xl font-black tracking-tight leading-none">{totalBalance.toLocaleString("vi-VN")}</span>
-                                <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                                <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalBalance, false)}</span>
+                                {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                             </h2>
                         </div>
 
@@ -798,11 +806,11 @@ export default function AnalyticsPage() {
                             </p>
 
                             <h2 className="text-2xl font-sans tabular-nums text-white flex items-baseline gap-0.5 tracking-wide">
-                                <span className="text-2xl font-black tracking-tight leading-none">{totalExpense.toLocaleString("vi-VN")}</span>
-                                <span className="text-base font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                                <span className="text-2xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
+                                {!isPrivate && <span className="text-base font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                                 <span className="text-xs font-semibold text-slate-500 ml-1.5 opacity-60 leading-none">/</span>
-                                <span className="text-sm font-medium text-slate-400 ml-1 leading-none">{totalBudget.toLocaleString("vi-VN")}</span>
-                                <span className="text-xs font-semibold text-slate-400 opacity-75 ml-0.5 leading-none">đ</span>
+                                <span className="text-sm font-medium text-slate-400 ml-1 leading-none">{formatAmount(totalBudget, false)}</span>
+                                {!isPrivate && <span className="text-xs font-semibold text-slate-400 opacity-75 ml-0.5 leading-none">đ</span>}
                             </h2>
                         </div>
 
@@ -1143,8 +1151,8 @@ export default function AnalyticsPage() {
 
                                         <span className="font-sans tabular-nums flex items-baseline gap-0.5 text-lg text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover/row:text-rose-300 transition-colors">
                                             <span className="text-sm font-semibold opacity-85 mr-0.5">-</span>
-                                            <span className="text-lg font-black tracking-tight">{item.amount.toLocaleString("vi-VN")}</span>
-                                            <span className="text-sm font-semibold opacity-75 ml-0.5">đ</span>
+                                            <span className="text-lg font-black tracking-tight">{formatAmount(item.amount, false)}</span>
+                                            {!isPrivate && <span className="text-sm font-semibold opacity-75 ml-0.5">đ</span>}
                                         </span>
 
                                     </div>

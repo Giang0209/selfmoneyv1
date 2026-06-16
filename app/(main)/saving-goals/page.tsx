@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { useToast } from "@/components/Toast";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 // ─── Real Types ───────────────────────────────────────────────────────────────
 type SavingGoal = {
@@ -69,6 +71,9 @@ function CircleProgress({ percent, color, size = 80 }: { percent: number; color:
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function SavingGoalsPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
+    const fmt = (v: number) => formatAmount(v);
+    const toast = useToast();
     const [goals, setGoals] = useState<SavingGoal[]>([]);
     const [wallets, setWallets] = useState<any[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -159,7 +164,7 @@ export default function SavingGoalsPage() {
 
     // Handlers
     const handleCreate = async () => {
-        if (!form.name || !form.target) { alert("Vui lòng nhập đủ thông tin"); return; }
+        if (!form.name || !form.target) { toast.warning("Vui lòng nhập đủ thông tin"); return; }
         const token = localStorage.getItem("token");
         try {
             const res = await fetch("/api/saving-goals", {
@@ -180,17 +185,18 @@ export default function SavingGoalsPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Tạo mục tiêu thất bại");
             
+            toast.success("Tạo mục tiêu thành công!");
             setForm({ name: "", icon: "🎯", target: "", deadline: "", color: "#06b6d4", category_id: "" });
             setCreateOpen(false);
             await fetchAllData();
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         }
     };
 
     const handleContribute = async () => {
         if (!contributeGoal || !contribAmount || !contribWalletId) {
-            alert("Vui lòng nhập số tiền và chọn ví nguồn");
+            toast.warning("Vui lòng nhập số tiền và chọn ví nguồn");
             return;
         }
         const token = localStorage.getItem("token");
@@ -216,17 +222,18 @@ export default function SavingGoalsPage() {
             setContributeGoal(null);
             await fetchAllData();
 
+            toast.success("Nạp tiền vào mục tiêu thành công!");
             if (data.goal && data.goal.status === "completed") {
                 setCompletedGoalAlert(data.goal);
             }
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         }
     };
 
     const handleSurplusTransfer = async () => {
         if (!surplusTargetId || !surplusAmount || !surplusWalletId) {
-            alert("Vui lòng chọn mục tiêu, ví nguồn và nhập số tiền");
+            toast.warning("Vui lòng chọn mục tiêu, ví nguồn và nhập số tiền");
             return;
         }
         const token = localStorage.getItem("token");
@@ -252,11 +259,12 @@ export default function SavingGoalsPage() {
             setSelectedSurplusItem(null);
             await fetchAllData();
 
+            toast.success("Chuyển tiền dư vào mục tiêu thành công!");
             if (data.goal && data.goal.status === "completed") {
                 setCompletedGoalAlert(data.goal);
             }
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         }
     };
 
@@ -273,9 +281,10 @@ export default function SavingGoalsPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Xóa mục tiêu thất bại");
             
+            toast.success("Xóa mục tiêu thành công!");
             await fetchAllData();
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         }
     };
 
@@ -476,10 +485,10 @@ export default function SavingGoalsPage() {
                                     </div>
                                     <div className="flex justify-between items-baseline">
                                         <span className="text-xl font-black" style={{ color: goal.color }}>
-                                            {Math.round(Number(goal.saved_amount)).toLocaleString("vi-VN")} đ
+                                            {fmt(Number(goal.saved_amount))}
                                         </span>
                                         <span className="text-sm font-semibold text-slate-400">
-                                            {Math.round(Number(goal.target_amount)).toLocaleString("vi-VN")} đ
+                                            {fmt(Number(goal.target_amount))}
                                         </span>
                                     </div>
 
@@ -568,7 +577,7 @@ export default function SavingGoalsPage() {
                                 </h3>
                                 <p className="text-xs text-slate-400 mt-1">Đặt ra mục tiêu tiết kiệm của bạn</p>
                             </div>
-                            <button onClick={() => setCreateOpen(false)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm transition">✕</button>
+                            <button onClick={() => setCreateOpen(false)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 flex items-center justify-center text-sm transition">✕</button>
                         </div>
 
                         <div className="p-6 space-y-5">
@@ -580,7 +589,7 @@ export default function SavingGoalsPage() {
                                         <button
                                             key={ic}
                                             onClick={() => setForm({ ...form, icon: ic })}
-                                            className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${form.icon === ic ? "ring-2 ring-violet-500 bg-violet-500/20 scale-110" : "bg-slate-900 hover:bg-slate-800"}`}
+                                            className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all border ${form.icon === ic ? "ring-2 ring-violet-500 bg-violet-500/20 border-violet-500 scale-110" : "bg-slate-950 border-slate-800/80 hover:bg-slate-900"}`}
                                         >
                                             {ic}
                                         </button>
@@ -683,7 +692,7 @@ export default function SavingGoalsPage() {
                                     <p className="text-xs text-slate-400 mt-0.5">{contributeGoal.name}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setContributeGoal(null)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm">✕</button>
+                            <button onClick={() => setContributeGoal(null)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 flex items-center justify-center text-sm transition">✕</button>
                         </div>
 
                         <div className="p-6 space-y-4">
@@ -754,7 +763,7 @@ export default function SavingGoalsPage() {
                                     <p className="text-xs text-slate-400 mt-0.5">Lịch sử đóng góp</p>
                                 </div>
                             </div>
-                            <button onClick={() => setDetailGoal(null)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm">✕</button>
+                            <button onClick={() => setDetailGoal(null)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 flex items-center justify-center text-sm transition">✕</button>
                         </div>
 
                         <div className="p-6">
@@ -822,7 +831,7 @@ export default function SavingGoalsPage() {
                                 <h3 className="text-lg font-extrabold text-emerald-400">Chuyển dư vào mục tiêu</h3>
                                 <p className="text-xs text-slate-400 mt-0.5">Dư ngân sách {selectedSurplusItem?.category_name || ""}: <span className="text-emerald-400 font-bold">{fmt(Number(selectedSurplusItem?.surplus_amount || 0))}</span></p>
                             </div>
-                            <button onClick={() => setSurplusModal(false)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm">✕</button>
+                            <button onClick={() => setSurplusModal(false)} className="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 flex items-center justify-center text-sm transition">✕</button>
                         </div>
 
                         <div className="p-6 space-y-4">
@@ -893,7 +902,7 @@ export default function SavingGoalsPage() {
                         {/* Top decorative close button */}
                         <button 
                             onClick={() => setCompletedGoalAlert(null)} 
-                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/50 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm transition"
+                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/50 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 flex items-center justify-center text-sm transition"
                         >
                             ✕
                         </button>

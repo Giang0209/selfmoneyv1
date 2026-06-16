@@ -23,9 +23,6 @@ export const registerController =
                     password:
                         body.password,
 
-                    username:
-                        body.username,
-
                     name:
                         body.name,
 

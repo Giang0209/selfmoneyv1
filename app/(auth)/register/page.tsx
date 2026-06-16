@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/Toast";
 
 export default function RegisterPage() {
+    const toast = useToast();
 
     const phoneRegex = /^[0-9]{10}$/;
 
@@ -19,8 +21,6 @@ export default function RegisterPage() {
     const [phone, setPhone] =
         useState("");
 
-    const [username, setUsername] =
-        useState("");
 
     const [password, setPassword] =
         useState("");
@@ -40,26 +40,26 @@ export default function RegisterPage() {
         if (loading) return;
 
         // Validate
-        if (!name || !phone || !username || !password || !confirm) {
-            alert("Vui lòng nhập đầy đủ thông tin");
+        if (!name || !phone || !password || !confirm) {
+            toast.warning("Vui lòng nhập đầy đủ thông tin");
             return;
         }
 
         // Phone validate
         if (!phoneRegex.test(phone)) {
-            alert("Số điện thoại phải đúng 10 chữ số");
+            toast.warning("Số điện thoại phải đúng 10 chữ số");
             return;
         }
 
         // Password match
         if (password !== confirm) {
-            alert("Mật khẩu không khớp");
+            toast.warning("Mật khẩu không khớp");
             return;
         }
 
         // Password strength
         if (!passwordRegex.test(password)) {
-            alert(
+            toast.warning(
                 "Password ≥ 8 ký tự, có chữ hoa và ký tự đặc biệt"
             );
             return;
@@ -83,7 +83,6 @@ export default function RegisterPage() {
                         body: JSON.stringify({
                             name,
                             phone,
-                            username,
                             password,
                         }),
                     }
@@ -93,7 +92,7 @@ export default function RegisterPage() {
                 await res.json();
 
             if (!res.ok) {
-                alert(
+                toast.error(
                     data.message ||
                     "Đăng ký thất bại"
                 );
@@ -116,7 +115,18 @@ export default function RegisterPage() {
                 );
             }
 
-            alert("Đăng ký thành công");
+            // lưu thông tin profile cache
+            if (data.user) {
+                localStorage.setItem(
+                    "user_profile",
+                    JSON.stringify({
+                        name: data.user.name,
+                        avatar: data.user.avatar,
+                    })
+                );
+            }
+
+            toast.success("Đăng ký thành công");
 
             router.push("/dashboard");
 
@@ -124,7 +134,7 @@ export default function RegisterPage() {
 
             console.error(error);
 
-            alert(
+            toast.error(
                 "Có lỗi xảy ra khi đăng ký"
             );
 
@@ -267,33 +277,6 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        {/* Username */}
-                        <div>
-
-                            <label className="text-sm text-gray-300 mb-1 block">
-                                Tên đăng nhập
-                            </label>
-
-                            <div className="relative">
-
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                    👤
-                                </span>
-
-                                <input
-                                    type="text"
-                                    placeholder="nguyenvana123"
-                                    value={username}
-                                    onChange={(e) =>
-                                        setUsername(
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full bg-black/60 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white outline-none focus:ring-2 focus:ring-cyan-400"
-                                />
-
-                            </div>
-                        </div>
 
                         {/* Password */}
                         <div>

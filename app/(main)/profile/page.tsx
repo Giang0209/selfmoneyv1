@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useTheme } from "@/lib/ThemeContext";
+import { useToast } from "@/components/Toast";
 
 type Profile = {
     name: string;
-    username: string;
     phone: string;
     avatar?: string;
     gender?: string;
@@ -17,6 +17,7 @@ type Profile = {
 
 export default function ProfilePage() {
     const { theme, setTheme } = useTheme();
+    const toast = useToast();
 
 
     const fileInputRef =
@@ -77,7 +78,7 @@ export default function ProfilePage() {
                 });
 
             if (!res.ok) {
-                alert("Không lấy được profile");
+                toast.error("Không lấy được profile");
                 return;
             }
 
@@ -148,7 +149,7 @@ export default function ProfilePage() {
 
                 if (!res.ok) {
 
-                    alert(
+                    toast.error(
                         data.message
                     );
 
@@ -165,7 +166,7 @@ export default function ProfilePage() {
                     error
                 );
 
-                alert(
+                toast.error(
                     "Upload avatar thất bại"
                 );
             }
@@ -205,11 +206,11 @@ export default function ProfilePage() {
                     await res.json();
 
                 if (!res.ok) {
-                    alert(data.message);
+                    toast.error(data.message);
                     return;
                 }
 
-                alert(
+                toast.success(
                     "Cập nhật thông tin thành công"
                 );
 
@@ -219,23 +220,38 @@ export default function ProfilePage() {
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Lỗi cập nhật profile"
                 );
             }
         };
+
+    const passwordRegex =
+        /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
     const handleChangePassword =
         async (e: any) => {
 
             e.preventDefault();
 
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                toast.warning("Vui lòng nhập đầy đủ thông tin");
+                return;
+            }
+
             if (
                 newPassword !==
                 confirmPassword
             ) {
-                alert(
+                toast.warning(
                     "Mật khẩu xác nhận không khớp"
+                );
+                return;
+            }
+
+            if (!passwordRegex.test(newPassword)) {
+                toast.warning(
+                    "Mật khẩu mới ≥ 8 ký tự, có chữ hoa và ký tự đặc biệt"
                 );
                 return;
             }
@@ -273,11 +289,11 @@ export default function ProfilePage() {
                     await res.json();
 
                 if (!res.ok) {
-                    alert(data.message);
+                    toast.error(data.message);
                     return;
                 }
 
-                alert(
+                toast.success(
                     "Đổi mật khẩu thành công"
                 );
 
@@ -289,7 +305,7 @@ export default function ProfilePage() {
 
                 console.error(error);
 
-                alert(
+                toast.error(
                     "Lỗi đổi mật khẩu"
                 );
             }
@@ -357,7 +373,7 @@ export default function ProfilePage() {
                                     <img
                                         src={
                                             avatar ||
-                                            "https://i.pravatar.cc/150"
+                                            "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='12' r='12' fill='%231e293b'/><circle cx='12' cy='8' r='4' fill='%2394a3b8'/><path d='M12 14c-4.42 0-8 2-8 5v1h16v-1c0-3-3.58-5-8-5z' fill='%2394a3b8'/></svg>"
                                         }
                                         alt="avatar"
                                         className="relative w-28 h-28 rounded-full object-cover border-4 border-card-border shadow-2xl"
@@ -405,29 +421,6 @@ export default function ProfilePage() {
                                             )
                                         }
                                         className="w-full bg-input-bg border border-input-border focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl py-3 pl-12 pr-4 text-foreground transition-all duration-300 shadow-inner"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* USERNAME */}
-                            <div>
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
-                                    Tên đăng nhập
-                                </label>
-
-                                <div className="relative opacity-65">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
-                                        👤
-                                    </span>
-
-                                    <input
-                                        type="text"
-                                        disabled
-                                        value={
-                                            profile?.username ||
-                                            ""
-                                        }
-                                        className="w-full bg-input-bg border border-card-border rounded-xl py-3 pl-12 pr-4 text-slate-500 cursor-not-allowed"
                                     />
                                 </div>
                             </div>
@@ -696,6 +689,16 @@ export default function ProfilePage() {
                                             }
                                         </button>
                                     </div>
+
+                                    <p className="text-xs text-slate-400 mt-3 space-y-1">
+                                        Mật khẩu mới phải có:
+                                        <br />
+                                        • Ít nhất 8 ký tự
+                                        <br />
+                                        • Ít nhất 1 chữ hoa (A-Z)
+                                        <br />
+                                        • Ít nhất 1 ký tự đặc biệt (!@#$...)
+                                    </p>
                                 </div>
 
                                 <button

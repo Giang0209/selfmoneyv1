@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SidebarStore } from "./SidebarStore";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 // Khai báo kiểu dữ liệu cho Profile của tài khoản người dùng hiển thị trên Header
 type Profile = {
@@ -12,6 +13,7 @@ type Profile = {
 };
 
 export default function Header() {
+    const { isPrivate, togglePrivacy } = usePrivacy();
     const [profile, setProfile] = useState<Profile | null>(null); // State lưu thông tin cá nhân
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State đóng mở dropdown menu
     const dropdownRef = useRef<HTMLDivElement>(null); // Ref tham chiếu đến thẻ dropdown để xử lý click ra ngoài
@@ -80,14 +82,14 @@ export default function Header() {
     // Hàm xử lý khi người dùng thực hiện Đăng xuất
     const handleLogout = () => {
         localStorage.removeItem("token"); // Xóa JWT Token trong bộ nhớ duyệt web
-        router.push("/login"); // Điều hướng về trang Đăng nhập
+        router.push("/"); // Điều hướng về trang Landing Page
     };
 
     return (
-        <header 
-            className="fixed top-0 left-0 h-20 bg-sidebar-bg backdrop-blur-3xl border-b border-card-border flex items-center justify-between px-8 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" 
-            style={{ 
-                left: isCollapsed ? '5.5rem' : '16rem', 
+        <header
+            className="fixed top-0 left-0 h-20 bg-sidebar-bg backdrop-blur-3xl border-b border-card-border flex items-center justify-between px-8 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.3)]"
+            style={{
+                left: isCollapsed ? '5.5rem' : '16rem',
                 width: isCollapsed ? 'calc(100% - 5.5rem)' : 'calc(100% - 16rem)',
                 transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)'
             }}
@@ -110,18 +112,34 @@ export default function Header() {
             </div>
 
             {/* PHẦN PHẢI: Thẻ Avatar và Dropdown menu người dùng */}
-            <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+            <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+                {/* NÚT CHẾ ĐỘ RIÊNG TƯ (PRIVACY TOGGLE) */}
+                <button
+                    onClick={togglePrivacy}
+                    className="p-2 rounded-xl bg-card-bg/40 hover:bg-card-bg border border-card-border hover:border-cyan-500/30 text-slate-400 hover:text-cyan-400 transition-all duration-300 shadow-inner flex items-center justify-center cursor-pointer w-9 h-9"
+                    title={isPrivate ? "Hiện số tiền" : "Ẩn số tiền"}
+                >
+                    {isPrivate ? (
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                        </svg>
+                    ) : (
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    )}
+                </button>
+
                 <div
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="relative group/avatar cursor-pointer flex items-center gap-3 bg-card-bg/40 hover:bg-card-bg px-4 py-2 rounded-2xl border border-card-border hover:border-cyan-500/30 shadow-inner transition-all duration-300"
                 >
-                    {profile?.avatar && (
-                        <img
-                            src={profile.avatar}
-                            alt="avatar"
-                            className="relative w-8.5 h-8.5 rounded-full object-cover border border-card-border"
-                        />
-                    )}
+                    <img
+                        src={profile?.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='12' r='12' fill='%231e293b'/><circle cx='12' cy='8' r='4' fill='%2394a3b8'/><path d='M12 14c-4.42 0-8 2-8 5v1h16v-1c0-3-3.58-5-8-5z' fill='%2394a3b8'/></svg>"}
+                        alt="avatar"
+                        className="relative w-8.5 h-8.5 rounded-full object-cover border border-card-border"
+                    />
 
                     <div className="text-left hidden sm:block">
                         <p className="text-xs text-foreground font-extrabold tracking-wide group-hover:text-cyan-400 transition-colors">

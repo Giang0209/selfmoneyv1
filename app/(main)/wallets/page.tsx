@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { useToast } from "@/components/Toast";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 
 type Wallet = {
@@ -25,6 +27,8 @@ type WalletForm = {
 };
 
 export default function WalletsPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
+    const toast = useToast();
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -51,9 +55,31 @@ export default function WalletsPage() {
 
     const walletIcons = ["🏦", "💵", "💳", "📱", "🪙"];
 
+    const [incomeCategories, setIncomeCategories] = useState<any[]>([]);
+    const [depositCategoryId, setDepositCategoryId] = useState<string>("");
+    const [depositNote, setDepositNote] = useState<string>("");
+
     useEffect(() => {
         fetchWallets();
+        fetchIncomeCategories();
     }, []);
+
+    const fetchIncomeCategories = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("/api/categories", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const json = await res.json();
+            const list = Array.isArray(json) ? json : (json.data || []);
+            const filtered = list.filter((c: any) => c.type === "income");
+            setIncomeCategories(filtered);
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const fetchWallets = async () => {
         try {
@@ -87,8 +113,7 @@ export default function WalletsPage() {
         );
     }, [wallets]);
 
-    const formatMoney = (value: number) =>
-        Math.round(value).toLocaleString("vi-VN") + " đ";
+    const formatMoney = (value: number) => formatAmount(value);
 
     const getWalletType = (icon: string) => {
         switch (icon) {
@@ -115,7 +140,7 @@ export default function WalletsPage() {
             const token = localStorage.getItem("token");
 
             if (!form.name || !form.balance) {
-                alert("Vui lòng nhập đầy đủ thông tin");
+                toast.warning("Vui lòng nhập đầy đủ thông tin");
                 return;
             }
 
@@ -136,11 +161,11 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert("Tạo tài khoản thất bại");
+                toast.error("Tạo tài khoản thất bại");
                 return;
             }
 
-            alert("Tạo tài khoản thành công");
+            toast.success("Tạo tài khoản thành công");
 
             setOpen(false);
             resetForm();
@@ -148,7 +173,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert("Lỗi tạo tài khoản");
+            toast.error("Lỗi tạo tài khoản");
         }
     };
 
@@ -172,16 +197,16 @@ export default function WalletsPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert("Xoá thất bại");
+                toast.error("Xoá thất bại");
                 return;
             }
 
             setWallets((prev) => prev.filter((w) => w.id !== id));
 
-            alert("Xoá tài khoản thành công");
+            toast.success("Xoá tài khoản thành công");
         } catch (err) {
             console.error(err);
-            alert("Lỗi xoá tài khoản");
+            toast.error("Lỗi xoá tài khoản");
         }
     };
 
@@ -209,6 +234,14 @@ export default function WalletsPage() {
             color: wallet.color || "#06b6d4",
         });
 
+        // Set default category and note for deposit
+        if (incomeCategories.length > 0) {
+            setDepositCategoryId(String(incomeCategories[0].id));
+        } else {
+            setDepositCategoryId("");
+        }
+        setDepositNote(`Nạp tiền vào tài khoản ${wallet.name}`);
+
         setOpen(true);
     };
 
@@ -232,31 +265,36 @@ export default function WalletsPage() {
 
             const depositAmt = Number(form.balance);
             if (isNaN(depositAmt) || depositAmt <= 0) {
-                alert("Vui lòng nhập số tiền nạp hợp lệ");
+                toast.warning("Vui lòng nhập số tiền nạp hợp lệ");
                 return;
             }
 
-            const newBalance = Number(selectedWallet.balance) + depositAmt;
+            if (!depositCategoryId) {
+                toast.warning("Vui lòng chọn danh mục thu nhập");
+                return;
+            }
 
-            const res = await fetch(`/api/wallets/${selectedWallet.id}`, {
-                method: "PATCH",
+            const res = await fetch("/api/transactions", {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    balance: newBalance,
+                    amount: depositAmt,
+                    category_id: Number(depositCategoryId),
+                    wallet_id: selectedWallet.id,
+                    note: depositNote || `Nạp tiền vào tài khoản ${selectedWallet.name}`,
+                    transaction_date: new Date().toISOString(),
                 }),
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
-                alert("Nạp tiền thất bại");
+                toast.error("Nạp tiền thất bại");
                 return;
             }
 
-            alert("Nạp tiền vào tài khoản thành công");
+            toast.success("Nạp tiền vào tài khoản thành công");
 
             setOpen(false);
             setMode("create");
@@ -265,7 +303,7 @@ export default function WalletsPage() {
             fetchWallets();
         } catch (err) {
             console.error(err);
-            alert("Lỗi nạp tiền vào tài khoản");
+            toast.error("Lỗi nạp tiền vào tài khoản");
         }
     };
 
@@ -303,54 +341,63 @@ export default function WalletsPage() {
                     </div>
                 </div>
 
-                <div className="mb-6 flex items-center justify-between gap-4">
-
-                    {/* SEARCH (giữ style cũ nhưng nâng cấp giao diện) */}
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Tìm kiếm tài khoản"
-                        className="w-full md:w-80 bg-slate-950/70 border border-slate-800/80 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-500 transition-all duration-300 shadow-inner"
-                    />
+                <div className="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    {/* SEARCH */}
+                    <div className="relative flex items-center flex-1 max-w-sm">
+                        <span className="absolute left-4 text-slate-500 pointer-events-none">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </span>
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Tìm kiếm tài khoản..."
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-2xl pl-11 pr-4 py-3 text-slate-200 placeholder-slate-500 transition-all duration-300 shadow-inner text-sm font-medium"
+                        />
+                    </div>
 
                     {/* BUTTON */}
                     <button
                         onClick={openCreate}
-                        className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/10 flex items-center gap-2"
+                        className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-cyan-500/10 flex items-center justify-center gap-2 text-sm"
                     >
-                        <span className="text-lg leading-none font-black">+</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
                         Thêm tài khoản
                     </button>
-
                 </div>
 
+                {/* TOTAL ASSETS CARD */}
                 <section className="mb-8">
-                    <div className="bg-gradient-to-br from-slate-950/60 via-slate-900/60 to-slate-950/60 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-4 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition-all duration-300" />
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-violet-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-violet-500/10 transition-all duration-300" />
+                    <div className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 relative overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.3)]">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition-all duration-500" />
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-violet-500/10 transition-all duration-500" />
 
-                        <div className="flex items-center gap-3 text-slate-400 mb-3 relative z-10">
-                            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                        <div className="flex items-center gap-3 text-slate-400 mb-4 relative z-10">
+                            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-lg shadow-[0_0_15px_rgba(6,182,212,0.1)]">
                                 💰
                             </div>
-                            <span className="uppercase text-xs font-bold tracking-wider text-slate-300">
-                                Tổng tài sản
+                            <span className="uppercase text-xs font-extrabold tracking-widest text-slate-400">
+                                Tổng tài sản liên kết
                             </span>
                         </div>
 
                         <h1
-                            className={`text-4xl font-sans tabular-nums flex items-baseline gap-0.5 select-all relative z-10 ${totalAssets >= 0
-                                ? "text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.15)]"
-                                : "text-rose-400 drop-shadow-[0_0_20px_rgba(251,113,133,0.15)]"
-                                }`}
+                            className={`text-4xl font-sans tabular-nums flex items-baseline gap-0.5 select-all relative z-10 ${
+                                totalAssets >= 0
+                                    ? "text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.15)] font-black"
+                                    : "text-rose-400 drop-shadow-[0_0_20px_rgba(251,113,133,0.15)] font-black"
+                            }`}
                         >
-                            <span className="text-2xl font-semibold opacity-85 leading-none mr-1">{totalAssets >= 0 ? "+" : "-"}</span>
-                            <span className="text-4xl font-black tracking-tight leading-none">{Math.abs(totalAssets).toLocaleString("vi-VN")}</span>
-                            <span className="text-3xl font-semibold opacity-75 ml-1 leading-none">đ</span>
+                            <span className="text-2xl font-bold opacity-80 leading-none mr-1.5">{totalAssets >= 0 ? "+" : "-"}</span>
+                            <span className="text-5xl font-black tracking-tight leading-none font-sans">{formatAmount(Math.abs(totalAssets), false)}</span>
+                            {!isPrivate && <span className="text-3xl font-semibold opacity-70 ml-1.5 leading-none">đ</span>}
                         </h1>
 
-                        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
+                        <div className="absolute bottom-0 left-0 h-[1.5px] w-full bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent group-hover:via-cyan-400 transition-all duration-500" />
                     </div>
                 </section>
 
@@ -364,109 +411,124 @@ export default function WalletsPage() {
                         {filteredWallets.map((wallet) => (
                             <div
                                 key={wallet.id}
-                                className="bg-gradient-to-br from-slate-950/60 via-slate-900/60 to-slate-950/60 backdrop-blur-xl border border-slate-800/60 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#06b6d4]/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between h-[260px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-800/60 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#06b6d4]/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
                             >
+                                {/* Background glow decoration matching wallet color */}
+                                <div
+                                    className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-3xl opacity-10 pointer-events-none transition-all duration-500 group-hover:opacity-20"
+                                    style={{
+                                        background: `radial-gradient(circle, ${wallet.color || "#06b6d4"} 0%, transparent 70%)`
+                                    }}
+                                />
+
                                 <div>
-                                    <div className="flex items-center justify-between mb-5">
-                                        {/* Icon with radial glow */}
-                                        <div className="relative select-none">
-                                            {/* Color glow backdrop */}
+                                    <div className="flex items-center justify-between mb-4 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                            {/* Icon Container */}
                                             <div
-                                                className="absolute inset-0 rounded-2xl blur-md opacity-10 group-hover:opacity-30 transition-all duration-300 animate-pulse-glow"
-                                                style={{ backgroundColor: wallet.color || "#06b6d4" }}
-                                            />
-                                            <div
-                                                className="relative w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
+                                                className="w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
                                                 style={{
                                                     color: wallet.color || "#06b6d4",
                                                     backgroundColor: `${wallet.color || "#06b6d4"}15`,
-                                                    borderColor: `${wallet.color || "#06b6d4"}35`,
+                                                    borderColor: `${wallet.color || "#06b6d4"}30`,
                                                 }}
                                             >
-                                                <span className="text-2xl">{wallet.icon || "💼"}</span>
+                                                <span className="text-2xl leading-none">{wallet.icon || "💼"}</span>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-extrabold text-base text-slate-100 group-hover:text-white transition-colors duration-200 line-clamp-1">
+                                                    {wallet.name}
+                                                </h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 text-slate-400 border border-slate-800/80 shadow-inner group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-all duration-300 inline-block w-fit">
+                                                        {getWalletType(wallet.icon)}
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                        {new Date(wallet.created_at).toLocaleDateString("vi-VN")}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-slate-950/40 px-2 py-1 rounded-md border border-slate-900/60">
-                                            {new Date(wallet.created_at).toLocaleDateString("vi-VN")}
-                                        </span>
-                                    </div>
-
-                                    <h3 className="font-bold text-lg text-slate-100 group-hover:text-white transition-colors duration-200">
-                                        {wallet.name}
-                                    </h3>
-
-                                    <div className="mt-2">
-                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 text-slate-400 border border-slate-800/80 shadow-inner group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-all duration-300 inline-block w-fit">
-                                            {getWalletType(wallet.icon)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4">
-                                    <p
-                                        className={`text-3xl font-sans tabular-nums flex items-baseline gap-0.5 transition-all duration-300 ${Number(wallet.balance) >= 0
-                                            ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.1)] group-hover:text-emerald-300"
-                                            : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)] group-hover:text-rose-300"
-                                            }`}
-                                    >
-                                        <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{Number(wallet.balance) >= 0 ? "+" : "-"}</span>
-                                        <span className="text-4xl font-black tracking-tight leading-none">{Math.abs(Number(wallet.balance)).toLocaleString("vi-VN")}</span>
-                                        <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
-                                    </p>
-
-                                    <div className="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center h-8">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold group-hover:text-slate-400 transition-colors">
-                                            Tài khoản
-                                        </span>
-                                        {/* Slide-in and fade-in Actions with Custom Premium SVGs */}
-                                        <div className="flex gap-2 opacity-0 translate-x-3 scale-95 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100 transition-all duration-350 origin-right">
+                                        {/* Quick Actions (always visible but light, highlights on hover) */}
+                                        <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
                                             <button
-                                                onClick={() => openEdit(wallet)}
-                                                className="text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title={"Nạp tiền"}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEdit(wallet);
+                                                }}
+                                                className="text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-slate-850 hover:border-emerald-500/20 p-2 rounded-xl transition duration-200"
+                                                title="Nạp tiền"
                                             >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </button>
 
                                             <button
-                                                onClick={() => handleDeleteWallet(wallet.id)}
-                                                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition p-1.5 rounded-lg flex items-center justify-center"
-                                                title={"Xóa"}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteWallet(wallet.id);
+                                                }}
+                                                className="text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 border border-slate-850 hover:border-rose-500/20 p-2 rounded-xl transition duration-200"
+                                                title="Xóa ví"
                                             >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Balance and type footer */}
+                                <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end">
+                                    <div className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">
+                                        Số dư khả dụng
+                                    </div>
+                                    <p
+                                        className={`text-3xl font-black font-sans tabular-nums flex items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${
+                                            Number(wallet.balance) >= 0
+                                                ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.1)] group-hover:text-emerald-300"
+                                                : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)] group-hover:text-rose-300"
+                                        }`}
+                                    >
+                                        <span className="text-lg font-bold mr-0.5">{Number(wallet.balance) >= 0 ? "+" : "-"}</span>
+                                        <span className="tracking-tight truncate">{formatAmount(Math.abs(Number(wallet.balance)), false)}</span>
+                                        {!isPrivate && <span className="text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
+                                    </p>
+                                </div>
+
+                                <div className="absolute bottom-0 left-0 h-[1.5px] w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent group-hover:via-cyan-400 transition-all duration-300"
+                                     style={{
+                                         background: `linear-gradient(to right, transparent, ${wallet.color || "#06b6d4"}60, transparent)`
+                                     }}
+                                />
                             </div>
                         ))}
 
                         <button
                             onClick={openCreate}
-                            className="bg-gradient-to-br from-slate-950/20 to-slate-900/20 border border-slate-800/80 border-dashed rounded-3xl p-6 min-h-[260px] h-full
+                            className="bg-gradient-to-br from-slate-950/20 to-slate-900/20 border border-slate-800/80 border-dashed rounded-3xl p-6 min-h-[220px] h-full
                                 flex flex-col items-center justify-center relative overflow-hidden
-                                hover:border-cyan-500/50 hover:bg-slate-900/30 transition-all duration-350 group"
+                                hover:border-cyan-500/50 hover:bg-slate-900/30 transition-all duration-300 group"
                         >
                             {/* Hover decoration glows */}
-                            <div className="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/15 transition-all duration-350" />
-                            <div className="absolute -bottom-12 -left-12 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl group-hover:bg-violet-500/15 transition-all duration-350" />
+                            <div className="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/15 transition-all duration-300" />
+                            <div className="absolute -bottom-12 -left-12 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl group-hover:bg-violet-500/15 transition-all duration-300" />
 
-                            <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/30 transition-all duration-350 shadow-[0_0_15px_rgba(6,182,212,0.05)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
                             </div>
 
-                            <p className="font-bold text-slate-200 group-hover:text-white transition-colors duration-250 text-base">
+                            <p className="font-bold text-slate-200 group-hover:text-white transition-colors duration-250 text-sm">
                                 Thêm tài khoản
                             </p>
 
-                            <p className="text-xs text-slate-500 mt-1.5 text-center max-w-[200px] leading-relaxed group-hover:text-slate-400 transition-colors duration-250">
+                            <p className="text-xs text-slate-500 mt-1 text-center max-w-[180px] leading-relaxed group-hover:text-slate-400 transition-colors duration-250">
                                 Tạo tài khoản mới
                             </p>
                         </button>
@@ -627,6 +689,36 @@ export default function WalletsPage() {
                                                 VND
                                             </span>
                                         </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
+                                            Danh mục thu nhập
+                                        </label>
+                                        <select
+                                            value={depositCategoryId}
+                                            onChange={(e) => setDepositCategoryId(e.target.value)}
+                                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 shadow-inner"
+                                        >
+                                            <option value="" className="bg-slate-950 text-slate-400">Chọn danh mục thu nhập</option>
+                                            {incomeCategories.map((c) => (
+                                                <option key={c.id} value={c.id} className="bg-slate-950 text-slate-200">
+                                                    {c.icon} {c.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-2">
+                                            Ghi chú
+                                        </label>
+                                        <input
+                                            value={depositNote}
+                                            onChange={(e) => setDepositNote(e.target.value)}
+                                            placeholder="Ghi chú nạp tiền"
+                                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 transition-all duration-300 shadow-inner"
+                                        />
                                     </div>
                                 </>
                             )}

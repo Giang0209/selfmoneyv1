@@ -6,8 +6,6 @@ export interface RegisterBody {
 
     password: string; // Mật khẩu (bắt buộc)
 
-    username?: string; // Tên đăng nhập (tùy chọn)
-
     name?: string; // Họ tên hiển thị (tùy chọn)
 
     avatar?: string; // URL ảnh đại diện (tùy chọn)

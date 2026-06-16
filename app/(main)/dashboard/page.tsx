@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Link from "next/link";
+import { usePrivacy } from "@/lib/PrivacyContext";
 
 
 type Transaction = {
@@ -48,6 +49,7 @@ type SavingGoal = {
 };
 
 export default function DashboardPage() {
+    const { isPrivate, formatAmount } = usePrivacy();
 
     const [loading, setLoading] = useState(true);
 
@@ -305,8 +307,8 @@ export default function DashboardPage() {
 
                         <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{totalIncome.toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalIncome, false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-green-500/50 to-transparent group-hover:via-green-400 transition-all duration-300" />
@@ -336,8 +338,8 @@ export default function DashboardPage() {
 
                         <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex items-baseline gap-0.5 tracking-wide">
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{totalExpense.toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent group-hover:via-red-400 transition-all duration-300" />
@@ -372,8 +374,8 @@ export default function DashboardPage() {
                                 }`}
                         >
                             <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{Math.abs(balance).toLocaleString("vi-VN")}</span>
-                            <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>
+                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
+                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
@@ -522,8 +524,8 @@ export default function DashboardPage() {
                                             </div>
                                             <span className={`text-sm font-sans tabular-nums flex items-baseline gap-0.5 ${isIncome ? "text-emerald-400" : "text-rose-400"}`}>
                                                 <span className="text-xs font-semibold opacity-85 mr-0.5">{isIncome ? "+" : "-"}</span>
-                                                <span className="font-black tracking-tight">{item.amount.toLocaleString("vi-VN")}</span>
-                                                <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>
+                                                <span className="font-black tracking-tight">{formatAmount(item.amount, false)}</span>
+                                                {!isPrivate && <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>}
                                             </span>
                                         </div>
 
@@ -636,13 +638,13 @@ export default function DashboardPage() {
                                                 <div className="flex justify-between items-baseline text-xs">
                                                     <span className="text-slate-500">Đã tích lũy</span>
                                                     <span className="font-bold text-slate-300">
-                                                        {Math.round(goal.saved_amount).toLocaleString("vi-VN")} đ
+                                                        {formatAmount(goal.saved_amount)}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between items-baseline text-xs">
                                                     <span className="text-slate-500">Mục tiêu</span>
                                                     <span className="font-semibold text-slate-400">
-                                                        {Math.round(goal.target_amount).toLocaleString("vi-VN")} đ
+                                                        {formatAmount(goal.target_amount)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -661,7 +663,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 {remaining > 0 && (
                                                     <p className="text-[10px] text-slate-500 mt-2 text-right">
-                                                        Còn thiếu: <span className="font-semibold text-slate-400">{Math.round(remaining).toLocaleString("vi-VN")} đ</span>
+                                                        Còn thiếu: <span className="font-semibold text-slate-400">{formatAmount(remaining)}</span>
                                                     </p>
                                                 )}
                                             </div>
@@ -762,8 +764,8 @@ export default function DashboardPage() {
                                                     : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
                                                 }`}>
                                                 <span className="text-xs font-semibold opacity-85 mr-0.5">{t.category_type === "income" ? "+" : "-"}</span>
-                                                <span className="text-base font-black tracking-tight">{Number(t.amount).toLocaleString("vi-VN")}</span>
-                                                <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>
+                                                <span className="text-base font-black tracking-tight">{formatAmount(t.amount, false)}</span>
+                                                {!isPrivate && <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>}
                                             </div>
                                             <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1 justify-end font-medium group-hover:text-slate-400 transition-colors duration-200">
                                                 <svg className="w-3 h-3 text-slate-600 group-hover:text-slate-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -843,8 +845,8 @@ export default function DashboardPage() {
                                         <div className={`font-sans tabular-nums flex items-baseline gap-0.5 ${isPositive ? "text-emerald-400" : "text-rose-400"
                                             }`}>
                                             <span className="text-xs font-semibold opacity-85 mr-0.5">{isPositive ? "+" : "-"}</span>
-                                            <span className="text-base font-black tracking-tight">{Math.abs(walletBalance).toLocaleString("vi-VN")}</span>
-                                            <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>
+                                            <span className="text-base font-black tracking-tight">{formatAmount(Math.abs(walletBalance), false)}</span>
+                                            {!isPrivate && <span className="text-xs font-semibold opacity-75 ml-0.5">đ</span>}
                                         </div>
                                     </div>
                                 );

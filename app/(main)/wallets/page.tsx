@@ -411,7 +411,7 @@ export default function WalletsPage() {
                         {filteredWallets.map((wallet) => (
                             <div
                                 key={wallet.id}
-                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-800/60 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#06b6d4]/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-800/60 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#06b6d4]/5 rounded-3xl p-4 sm:p-5 xl:p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
                             >
                                 {/* Background glow decoration matching wallet color */}
                                 <div
@@ -422,11 +422,11 @@ export default function WalletsPage() {
                                 />
 
                                 <div>
-                                    <div className="flex items-center justify-between mb-4 relative z-10">
-                                        <div className="flex items-center gap-3">
+                                    <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
                                             {/* Icon Container */}
                                             <div
-                                                className="w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
+                                                className="w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105 flex-shrink-0"
                                                 style={{
                                                     color: wallet.color || "#06b6d4",
                                                     backgroundColor: `${wallet.color || "#06b6d4"}15`,
@@ -436,15 +436,15 @@ export default function WalletsPage() {
                                                 <span className="text-2xl leading-none">{wallet.icon || "💼"}</span>
                                             </div>
 
-                                            <div>
+                                            <div className="min-w-0 flex-1">
                                                 <h3 className="font-extrabold text-base text-slate-100 group-hover:text-white transition-colors duration-200 line-clamp-1">
                                                     {wallet.name}
                                                 </h3>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 text-slate-400 border border-slate-800/80 shadow-inner group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-all duration-300 inline-block w-fit">
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                                    <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 text-slate-400 border border-slate-800/80 shadow-inner group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-all duration-300 inline-block w-fit whitespace-nowrap">
                                                         {getWalletType(wallet.icon)}
                                                     </span>
-                                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">
                                                         {new Date(wallet.created_at).toLocaleDateString("vi-VN")}
                                                     </span>
                                                 </div>
@@ -452,7 +452,7 @@ export default function WalletsPage() {
                                         </div>
 
                                         {/* Quick Actions (always visible but light, highlights on hover) */}
-                                        <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+                                        <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -483,20 +483,20 @@ export default function WalletsPage() {
                                 </div>
 
                                 {/* Balance and type footer */}
-                                <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end">
+                                <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end min-w-0">
                                     <div className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">
                                         Số dư khả dụng
                                     </div>
                                     <p
-                                        className={`text-3xl font-black font-sans tabular-nums flex items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${
+                                        className={`text-xl sm:text-2xl xl:text-3xl font-black font-sans tabular-nums flex flex-nowrap items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${
                                             Number(wallet.balance) >= 0
                                                 ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.1)] group-hover:text-emerald-300"
                                                 : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)] group-hover:text-rose-300"
                                         }`}
                                     >
-                                        <span className="text-lg font-bold mr-0.5">{Number(wallet.balance) >= 0 ? "+" : "-"}</span>
+                                        <span className="text-sm sm:text-base xl:text-lg font-bold mr-0.5">{Number(wallet.balance) >= 0 ? "+" : "-"}</span>
                                         <span className="tracking-tight truncate">{formatAmount(Math.abs(Number(wallet.balance)), false)}</span>
-                                        {!isPrivate && <span className="text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
+                                        {!isPrivate && <span className="text-sm sm:text-base xl:text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
                                     </p>
                                 </div>
 

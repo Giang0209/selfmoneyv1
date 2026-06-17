@@ -665,9 +665,9 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
-                {/* 4 CARDS */}
+                {/* 3 CARDS */}
 
-                <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
 
                     {/* INCOME */}
 
@@ -780,53 +780,6 @@ export default function AnalyticsPage() {
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
 
-                    </div>
-
-                    {/* BUDGET */}
-
-                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-slate-800 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/5 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[200px]">
-
-                        <div>
-                            <div className="flex items-center justify-between mb-5">
-
-                                <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 group-hover:bg-violet-500/20 transition-all duration-300">
-                                    <svg className="w-6 h-6 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                    </svg>
-                                </div>
-
-                                <span className="text-xs text-violet-400 bg-violet-400/10 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                                    Ngân sách ({budgetPercent}%)
-                                </span>
-
-                            </div>
-
-                            <p className="text-slate-400 text-sm mb-1">
-                                Đã dùng / Giới hạn
-                            </p>
-
-                            <h2 className="text-2xl font-sans tabular-nums text-white flex items-baseline gap-0.5 tracking-wide">
-                                <span className="text-2xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
-                                {!isPrivate && <span className="text-base font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
-                                <span className="text-xs font-semibold text-slate-500 ml-1.5 opacity-60 leading-none">/</span>
-                                <span className="text-sm font-medium text-slate-400 ml-1 leading-none">{formatAmount(totalBudget, false)}</span>
-                                {!isPrivate && <span className="text-xs font-semibold text-slate-400 opacity-75 ml-0.5 leading-none">đ</span>}
-                            </h2>
-                        </div>
-
-                        <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden mt-4">
-                            <div
-                                className="h-full bg-violet-400 rounded-full transition-all duration-500"
-                                style={{
-                                    width: `${Math.min(
-                                        budgetPercent,
-                                        100
-                                    )}%`,
-                                }}
-                            />
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-violet-500/50 to-transparent group-hover:via-violet-400 transition-all duration-300" />
                     </div>
 
                 </section>

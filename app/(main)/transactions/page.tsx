@@ -67,6 +67,58 @@ export default function TransactionPage() {
         to: "",           // Lọc đến ngày
     });
 
+    const [dateRangeOption, setDateRangeOption] = useState<string>("this_month");
+
+    // Tự động tính toán khoảng thời gian của bộ lọc khi tuỳ chọn thay đổi
+    useEffect(() => {
+        const today = new Date();
+        const formatDate = (d: Date) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const date = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${date}`;
+        };
+
+        let from = "";
+        let to = "";
+
+        if (dateRangeOption === "today") {
+            from = formatDate(today);
+            to = formatDate(today);
+        } else if (dateRangeOption === "last_7_days") {
+            const past = new Date();
+            past.setDate(today.getDate() - 7);
+            from = formatDate(past);
+            to = formatDate(today);
+        } else if (dateRangeOption === "last_30_days") {
+            const past = new Date();
+            past.setDate(today.getDate() - 30);
+            from = formatDate(past);
+            to = formatDate(today);
+        } else if (dateRangeOption === "this_month") {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            from = formatDate(firstDay);
+            to = formatDate(lastDay);
+        } else if (dateRangeOption === "last_month") {
+            const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+            from = formatDate(firstDay);
+            to = formatDate(lastDay);
+        } else if (dateRangeOption === "all") {
+            from = "";
+            to = "";
+        }
+
+        if (dateRangeOption !== "custom") {
+            setFilters((prev) => ({
+                ...prev,
+                from,
+                to,
+            }));
+        }
+    }, [dateRangeOption]);
+
     // Lấy JWT Token từ localStorage để xác thực API
     const token =
         typeof window !== "undefined"
@@ -349,7 +401,7 @@ export default function TransactionPage() {
                 </div>
 
                 {/* ===== OVERVIEW (MATCH DASHBOARD STYLE) ===== */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
 
                     {/* INCOME */}
                     <div className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group shadow-[0_4px_25px_rgba(0,0,0,0.4)]">
@@ -369,10 +421,10 @@ export default function TransactionPage() {
                             Tổng thu nhập
                         </p>
 
-                        <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(income, false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                        <h2 className="text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex flex-wrap items-baseline gap-0.5 tracking-wide">
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(income, false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-green-500/50 to-transparent group-hover:via-green-400 transition-all duration-300" />
@@ -396,10 +448,10 @@ export default function TransactionPage() {
                             Tổng chi tiêu
                         </p>
 
-                        <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex items-baseline gap-0.5 tracking-wide">
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(expense, false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                        <h2 className="text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex flex-wrap items-baseline gap-0.5 tracking-wide">
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(expense, false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent group-hover:via-red-400 transition-all duration-300" />
@@ -424,14 +476,14 @@ export default function TransactionPage() {
                         </p>
 
                         <h2
-                            className={`text-3xl font-sans tabular-nums flex items-baseline gap-0.5 tracking-wide ${balance >= 0
+                            className={`text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums flex flex-wrap items-baseline gap-0.5 tracking-wide ${balance >= 0
                                 ? "text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.1)]"
                                 : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)]"
                                 }`}
                         >
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
@@ -440,19 +492,36 @@ export default function TransactionPage() {
                 </section>
 
                 {/* FILTER */}
-                <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 mb-6 backdrop-blur-xl relative overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                         {/* SEARCH */}
-                        <input
-                            type="text"
-                            placeholder="Tìm ghi chú / danh mục..."
-                            value={filters.search}
-                            onChange={(e) =>
-                                setFilters({ ...filters, search: e.target.value })
-                            }
-                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Tìm ghi chú / danh mục..."
+                                value={filters.search}
+                                onChange={(e) =>
+                                    setFilters({ ...filters, search: e.target.value })
+                                }
+                                className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200 text-sm"
+                            />
+                        </div>
+
+                        {/* DATE RANGE SELECT */}
+                        <select
+                            value={dateRangeOption}
+                            onChange={(e) => setDateRangeOption(e.target.value)}
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200 text-sm cursor-pointer"
+                        >
+                            <option value="this_month">📅 Tháng này</option>
+                            <option value="today">📅 Hôm nay</option>
+                            <option value="last_7_days">📅 7 ngày qua</option>
+                            <option value="last_30_days">📅 30 ngày qua</option>
+                            <option value="last_month">📅 Tháng trước</option>
+                            <option value="all">📅 Tất cả thời gian</option>
+                            <option value="custom">📅 Tùy chỉnh khoảng ngày</option>
+                        </select>
 
                         {/* CATEGORY */}
                         <select
@@ -460,9 +529,9 @@ export default function TransactionPage() {
                             onChange={(e) =>
                                 setFilters({ ...filters, category: e.target.value })
                             }
-                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200 text-sm cursor-pointer"
                         >
-                            <option value="">Tất cả danh mục</option>
+                            <option value="">🗂️ Tất cả danh mục</option>
                             {categories.map((c) => (
                                 <option key={c.id} value={c.name}>
                                     {c.icon} {c.name}
@@ -476,36 +545,44 @@ export default function TransactionPage() {
                             onChange={(e) =>
                                 setFilters({ ...filters, wallet: e.target.value })
                             }
-                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
+                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200 text-sm cursor-pointer"
                         >
-                            <option value="">Tất cả tài khoản</option>
+                            <option value="">💳 Tất cả tài khoản</option>
                             {wallets.map((w) => (
                                 <option key={w.id} value={w.name}>
                                     {w.name}
                                 </option>
                             ))}
                         </select>
-
-                        {/* FROM */}
-                        <input
-                            type="date"
-                            value={filters.from}
-                            onChange={(e) =>
-                                setFilters({ ...filters, from: e.target.value })
-                            }
-                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                        />
-
-                        {/* TO */}
-                        <input
-                            type="date"
-                            value={filters.to}
-                            onChange={(e) =>
-                                setFilters({ ...filters, to: e.target.value })
-                            }
-                            className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 outline-none transition text-slate-200"
-                        />
                     </div>
+
+                    {/* CUSTOM DATE RANGE (Displays when custom option is selected) */}
+                    {dateRangeOption === "custom" && (
+                        <div className="mt-4 pt-4 border-t border-slate-800/60 flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">Từ ngày:</span>
+                                <input
+                                    type="date"
+                                    value={filters.from}
+                                    onChange={(e) =>
+                                        setFilters({ ...filters, from: e.target.value })
+                                    }
+                                    className="bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-2 outline-none transition text-slate-200 text-xs font-medium w-full sm:w-44"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">Đến ngày:</span>
+                                <input
+                                    type="date"
+                                    value={filters.to}
+                                    onChange={(e) =>
+                                        setFilters({ ...filters, to: e.target.value })
+                                    }
+                                    className="bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-2 outline-none transition text-slate-200 text-xs font-medium w-full sm:w-44"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* LIST */}

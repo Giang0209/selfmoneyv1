@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ===== OVERVIEW ===== */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
 
                     {/* INCOME */}
                     <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-xl border border-slate-800 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/5 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group">
@@ -305,10 +305,10 @@ export default function DashboardPage() {
                             Tổng thu nhập
                         </p>
 
-                        <h2 className="text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex items-baseline gap-0.5 tracking-wide">
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalIncome, false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                        <h2 className="text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.1)] flex flex-wrap items-baseline gap-0.5 tracking-wide">
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">+</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(totalIncome, false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-green-500/50 to-transparent group-hover:via-green-400 transition-all duration-300" />
@@ -336,10 +336,10 @@ export default function DashboardPage() {
                             Tổng chi tiêu
                         </p>
 
-                        <h2 className="text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex items-baseline gap-0.5 tracking-wide">
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                        <h2 className="text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums text-rose-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.1)] flex flex-wrap items-baseline gap-0.5 tracking-wide">
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">-</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(totalExpense, false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent group-hover:via-red-400 transition-all duration-300" />
@@ -368,14 +368,14 @@ export default function DashboardPage() {
                         </p>
 
                         <h2
-                            className={`text-3xl font-sans tabular-nums flex items-baseline gap-0.5 tracking-wide ${balance >= 0
+                            className={`text-2xl sm:text-2xl lg:text-3xl font-sans tabular-nums flex flex-wrap items-baseline gap-0.5 tracking-wide ${balance >= 0
                                 ? "text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.1)]"
                                 : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.1)]"
                                 }`}
                         >
-                            <span className="text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
-                            <span className="text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
-                            {!isPrivate && <span className="text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
+                            <span className="text-lg lg:text-xl font-semibold opacity-85 leading-none mr-0.5">{balance >= 0 ? "+" : "-"}</span>
+                            <span className="text-2xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-none">{formatAmount(Math.abs(balance), false)}</span>
+                            {!isPrivate && <span className="text-lg lg:text-xl font-semibold opacity-75 ml-0.5 leading-none">đ</span>}
                         </h2>
 
                         <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent group-hover:via-cyan-400 transition-all duration-300" />
@@ -719,8 +719,8 @@ export default function DashboardPage() {
                                         {/* Left colored glowing strip */}
                                         <div
                                             className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r-full opacity-60 group-hover:opacity-100 transition-all duration-300 ${t.category_type === "income"
-                                                    ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
-                                                    : "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.8)]"
+                                                ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+                                                : "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.8)]"
                                                 }`}
                                         />
 
@@ -760,8 +760,8 @@ export default function DashboardPage() {
                                         {/* Value & Date */}
                                         <div className="text-right flex flex-col justify-between h-full min-h-[3.2rem]">
                                             <div className={`font-sans tabular-nums flex items-baseline gap-0.5 text-base transition-all duration-300 ${t.category_type === "income"
-                                                    ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-emerald-300"
-                                                    : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
+                                                ? "text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-emerald-300"
+                                                : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
                                                 }`}>
                                                 <span className="text-xs font-semibold opacity-85 mr-0.5">{t.category_type === "income" ? "+" : "-"}</span>
                                                 <span className="text-base font-black tracking-tight">{formatAmount(t.amount, false)}</span>
@@ -824,8 +824,8 @@ export default function DashboardPage() {
                                                 />
                                                 <div
                                                     className={`relative w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all duration-300 group-hover:scale-105 border ${isPositive
-                                                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20"
-                                                            : "bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20"
+                                                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500/20"
+                                                        : "bg-rose-500/10 border-rose-500/20 text-rose-400 group-hover:bg-rose-500/20"
                                                         }`}
                                                 >
                                                     {wallet.icon}

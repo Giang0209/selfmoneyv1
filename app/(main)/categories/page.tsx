@@ -303,97 +303,97 @@ export default function CategoryPage() {
                     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
                         {filtered.map((item) => (
-                            <div
-                                key={item.id}
-                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
-                            >
-                                {/* Background glow decoration matching category color */}
-                                <div
-                                    className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-3xl opacity-10 pointer-events-none transition-all duration-500 group-hover:opacity-20"
-                                    style={{
-                                        background: `radial-gradient(circle, ${item.color || "#06b6d4"} 0%, transparent 70%)`
-                                    }}
-                                />
+                             <div
+                                 key={item.id}
+                                 className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-4 sm:p-5 xl:p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+                             >
+                                 {/* Background glow decoration matching category color */}
+                                 <div
+                                     className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-3xl opacity-10 pointer-events-none transition-all duration-500 group-hover:opacity-20"
+                                     style={{
+                                         background: `radial-gradient(circle, ${item.color || "#06b6d4"} 0%, transparent 70%)`
+                                     }}
+                                 />
 
-                                <div>
-                                    <div className="flex items-center justify-between mb-4 relative z-10">
-                                        <div className="flex items-center gap-3.5">
-                                            {/* Icon with radial glow */}
-                                            <div className="relative select-none flex-shrink-0">
-                                                {/* Color glow backdrop */}
-                                                <div
-                                                    className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300 animate-pulse"
-                                                    style={{ backgroundColor: item.color || "#06b6d4" }}
-                                                />
-                                                <div
-                                                    className="relative w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
-                                                    style={{
-                                                        color: item.color || "#06b6d4",
-                                                        backgroundColor: `${item.color || "#06b6d4"}15`,
-                                                        borderColor: `${item.color || "#06b6d4"}35`,
-                                                    }}
-                                                >
-                                                    <span className="text-2xl leading-none">{item.icon || "📁"}</span>
-                                                </div>
-                                            </div>
+                                 <div>
+                                     <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
+                                         <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                             {/* Icon with radial glow */}
+                                             <div className="relative select-none flex-shrink-0">
+                                                 {/* Color glow backdrop */}
+                                                 <div
+                                                     className="absolute inset-0 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300 animate-pulse"
+                                                     style={{ backgroundColor: item.color || "#06b6d4" }}
+                                                 />
+                                                 <div
+                                                     className="relative w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105"
+                                                     style={{
+                                                         color: item.color || "#06b6d4",
+                                                         backgroundColor: `${item.color || "#06b6d4"}15`,
+                                                         borderColor: `${item.color || "#06b6d4"}35`,
+                                                     }}
+                                                 >
+                                                     <span className="text-2xl leading-none">{item.icon || "📁"}</span>
+                                                 </div>
+                                             </div>
 
-                                            {/* Header text container */}
-                                            <div className="min-w-0">
-                                                <h3 className="font-extrabold text-base text-slate-100 group-hover:text-white transition-colors duration-200 truncate">
-                                                    {item.name}
-                                                </h3>
+                                             {/* Header text container */}
+                                             <div className="min-w-0 flex-1">
+                                                 <h3 className="font-extrabold text-base text-slate-100 group-hover:text-white transition-colors duration-200 truncate">
+                                                     {item.name}
+                                                 </h3>
 
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit ${item.type === "income"
-                                                            ? "text-green-400 group-hover:border-green-500/30"
-                                                            : "text-rose-400 group-hover:border-rose-500/30"
-                                                        }`}>
-                                                        {item.type === "income" ? 'Thu nhập' : 'Chi tiêu'}
-                                                    </span>
-                                                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-                                                        {item.created_at
-                                                            ? new Date(item.created_at).toLocaleDateString("vi-VN")
-                                                            : 'Danh mục'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                 <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                                     <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-slate-950/80 border border-slate-800/80 shadow-inner transition-all duration-300 inline-block w-fit whitespace-nowrap ${item.type === "income"
+                                                             ? "text-green-400 group-hover:border-green-500/30"
+                                                             : "text-rose-400 group-hover:border-rose-500/30"
+                                                         }`}>
+                                                         {item.type === "income" ? 'Thu nhập' : 'Chi tiêu'}
+                                                     </span>
+                                                     <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">
+                                                         {item.created_at
+                                                             ? new Date(item.created_at).toLocaleDateString("vi-VN")
+                                                             : 'Danh mục'}
+                                                     </span>
+                                                 </div>
+                                             </div>
+                                         </div>
 
-                                        {/* Actions (trash button) on top-right */}
-                                        <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200 relative z-20">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(item.id);
-                                                }}
-                                                className="text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 border border-slate-850 hover:border-rose-500/20 p-2 rounded-xl transition duration-200"
-                                                title="Xóa danh mục"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                         {/* Actions (trash button) on top-right */}
+                                         <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200 relative z-20 flex-shrink-0">
+                                             <button
+                                                 onClick={(e) => {
+                                                     e.stopPropagation();
+                                                     handleDelete(item.id);
+                                                 }}
+                                                 className="text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 border border-slate-850 hover:border-rose-500/20 p-2 rounded-xl transition duration-200"
+                                                 title="Xóa danh mục"
+                                             >
+                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                 </svg>
+                                             </button>
+                                         </div>
+                                     </div>
+                                 </div>
 
-                                {/* Total transaction footer */}
-                                <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end">
-                                    <div className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">
-                                        Tổng giao dịch
-                                    </div>
+                                 {/* Total transaction footer */}
+                                 <div className="mt-4 pt-3 border-t border-slate-800/40 relative z-10 flex flex-col justify-end min-w-0">
+                                     <div className="text-[9px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">
+                                         Tổng giao dịch
+                                     </div>
 
-                                    <p
-                                        className={`text-3xl font-black font-sans tabular-nums flex items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${item.type === "income"
-                                            ? "text-green-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-green-300"
-                                            : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
-                                            }`}
-                                    >
-                                        <span className="text-lg font-bold mr-0.5">{item.type === "income" ? "+" : "-"}</span>
-                                        <span className="tracking-tight truncate">{formatAmount(Number(item.total_amount || 0), false)}</span>
-                                        {!isPrivate && <span className="text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
-                                    </p>
-                                </div>
+                                     <p
+                                         className={`text-xl sm:text-2xl xl:text-3xl font-black font-sans tabular-nums flex flex-nowrap items-baseline gap-0.5 pb-2 pt-1 transition-all duration-300 ${item.type === "income"
+                                             ? "text-green-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] group-hover:text-green-300"
+                                             : "text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.15)] group-hover:text-rose-300"
+                                             }`}
+                                     >
+                                         <span className="text-sm sm:text-base xl:text-lg font-bold mr-0.5">{item.type === "income" ? "+" : "-"}</span>
+                                         <span className="tracking-tight truncate">{formatAmount(Number(item.total_amount || 0), false)}</span>
+                                         {!isPrivate && <span className="text-sm sm:text-base xl:text-lg font-semibold opacity-75 ml-0.5 flex-shrink-0">đ</span>}
+                                     </p>
+                                 </div>
 
                                 <div className="absolute bottom-0 left-0 h-[1.5px] w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent group-hover:via-cyan-400 transition-all duration-300"
                                      style={{

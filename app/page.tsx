@@ -117,31 +117,19 @@ export default function Home() {
 
           {/* Call to Actions */}
           <div className="flex items-center gap-4">
-
-            {isLoggedIn ? (
-              <Link
-                href="/dashboard"
-                className="bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors border border-slate-700/50"
-              >
-                Vào ứng dụng
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="bg-slate-800/50 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-800 hover:border-slate-700"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  href="/register"
-                  className="relative group overflow-hidden px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 font-semibold text-white text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300"
-                >
-                  <span className="relative z-10">Bắt đầu ngay</span>
-                  <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </Link>
-              </>
-            )}
+            <Link
+              href="/login"
+              className="bg-slate-800/50 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-800 hover:border-slate-700"
+            >
+              Đăng nhập
+            </Link>
+            <Link
+              href="/register"
+              className="relative group overflow-hidden px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 font-semibold text-white text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300"
+            >
+              <span className="relative z-10">Bắt đầu ngay</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </Link>
           </div>
         </div>
       </header>
@@ -507,7 +495,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     
                     {/* Income */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden group">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 relative overflow-hidden group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
                           💵
@@ -515,12 +503,12 @@ export default function Home() {
                         <span className="text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full font-bold uppercase">Thu nhập</span>
                       </div>
                       <p className="text-slate-400 text-xs font-medium">Tổng thu nhập</p>
-                      <p className="text-2xl font-black text-green-400 mt-1 tabular-nums">+{mockDashboard.income.toLocaleString("vi-VN")}đ</p>
+                      <p className="text-xl sm:text-2xl font-black text-green-400 mt-1 tabular-nums truncate">+{mockDashboard.income.toLocaleString("vi-VN")}đ</p>
                       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-green-500/30 group-hover:bg-green-400 transition-colors" />
                     </div>
 
                     {/* Expense */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden group">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 relative overflow-hidden group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
                           💳
@@ -528,12 +516,12 @@ export default function Home() {
                         <span className="text-[10px] text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded-full font-bold uppercase">Chi tiêu</span>
                       </div>
                       <p className="text-slate-400 text-xs font-medium">Tổng chi tiêu</p>
-                      <p className="text-2xl font-black text-rose-400 mt-1 tabular-nums">-{mockDashboard.expense.toLocaleString("vi-VN")}đ</p>
+                      <p className="text-xl sm:text-2xl font-black text-rose-400 mt-1 tabular-nums truncate">-{mockDashboard.expense.toLocaleString("vi-VN")}đ</p>
                       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-rose-500/30 group-hover:bg-rose-400 transition-colors" />
                     </div>
 
                     {/* Balance */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden group">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 relative overflow-hidden group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                           💰
@@ -541,7 +529,7 @@ export default function Home() {
                         <span className="text-[10px] text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full font-bold uppercase">Số dư</span>
                       </div>
                       <p className="text-slate-400 text-xs font-medium">Số dư thực tế</p>
-                      <p className="text-2xl font-black text-cyan-400 mt-1 tabular-nums">+{mockDashboard.balance.toLocaleString("vi-VN")}đ</p>
+                      <p className="text-xl sm:text-2xl font-black text-cyan-400 mt-1 tabular-nums truncate">+{mockDashboard.balance.toLocaleString("vi-VN")}đ</p>
                       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-500/30 group-hover:bg-cyan-400 transition-colors" />
                     </div>
                   </div>

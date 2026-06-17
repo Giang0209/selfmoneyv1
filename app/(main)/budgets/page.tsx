@@ -849,7 +849,7 @@ export default function BudgetsPage() {
                         return (
                             <div
                                 key={b.id}
-                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between h-[260px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+                                className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 hover:border-slate-700/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/5 rounded-3xl p-4 sm:p-5 xl:p-6 relative overflow-hidden transition-all duration-300 group flex flex-col justify-between h-[260px] shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
                             >
                                 <div>
                                     <div className="flex items-center gap-3 mb-4">
@@ -875,16 +875,16 @@ export default function BudgetsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between text-base mb-2 mt-6 items-baseline">
-                                        <span className="text-slate-400 font-sans tabular-nums">
-                                            <span className="font-semibold text-slate-200 text-base">{formatAmount(b.spent, false)}</span>
-                                            {!isPrivate && <span className="opacity-75 ml-0.5 mr-1.5">đ</span>}
-                                            <span className="text-base text-slate-600 font-normal mx-1">/</span>
-                                            <span className="font-semibold text-slate-500 text-base">{formatAmount(b.limit, false)}</span>
-                                            {!isPrivate && <span className="opacity-75 ml-0.5">đ</span>}
+                                    <div className="flex flex-wrap justify-between gap-x-2 gap-y-1 text-sm sm:text-base mb-2 mt-6 items-baseline min-w-0">
+                                        <span className="text-slate-400 font-sans tabular-nums truncate flex-1 min-w-0">
+                                            <span className="font-semibold text-slate-200 text-sm sm:text-base">{formatAmount(b.spent, false)}</span>
+                                            {!isPrivate && <span className="opacity-75 ml-0.5 mr-1 text-xs sm:text-sm">đ</span>}
+                                            <span className="text-xs sm:text-sm text-slate-600 font-normal mx-0.5">/</span>
+                                            <span className="font-semibold text-slate-500 text-sm sm:text-base">{formatAmount(b.limit, false)}</span>
+                                            {!isPrivate && <span className="opacity-75 ml-0.5 text-xs sm:text-sm">đ</span>}
                                         </span>
 
-                                        <span className="font-bold font-sans tabular-nums text-base" style={{ color: b.color || "#06b6d4" }}>
+                                        <span className="font-bold font-sans tabular-nums text-sm sm:text-base flex-shrink-0" style={{ color: b.color || "#06b6d4" }}>
                                             {percent.toFixed(1)}%
                                         </span>
                                     </div>

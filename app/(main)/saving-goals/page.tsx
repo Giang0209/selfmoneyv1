@@ -383,18 +383,18 @@ export default function SavingGoalsPage() {
                 ))}
 
                 {/* ── Summary Stats ── */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
                     {[
                         { label: "Tổng mục tiêu", value: fmt(totalTarget), icon: "🎯", color: "text-violet-400" },
                         { label: "Đã tiết kiệm", value: fmt(totalSaved), icon: "💰", color: "text-emerald-400" },
                         { label: "Đang thực hiện", value: activeCount + " mục tiêu", icon: "⏳", color: "text-cyan-400" },
                         { label: "Hoàn thành", value: completedCount + " mục tiêu", icon: "✅", color: "text-amber-400" },
                     ].map((stat) => (
-                        <div key={stat.label} className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 rounded-2xl p-4 flex items-center gap-3">
-                            <span className="text-2xl">{stat.icon}</span>
-                            <div>
-                                <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
-                                <p className={`text-sm font-black mt-0.5 ${stat.color}`}>{stat.value}</p>
+                        <div key={stat.label} className="bg-gradient-to-br from-slate-950/40 via-slate-900/40 to-slate-950/40 backdrop-blur-xl border border-slate-850 rounded-2xl p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                            <span className="text-xl sm:text-2xl flex-shrink-0">{stat.icon}</span>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate" title={stat.label}>{stat.label}</p>
+                                <p className={`text-xs sm:text-sm font-black mt-0.5 truncate ${stat.color}`} title={stat.value}>{stat.value}</p>
                             </div>
                         </div>
                     ))}
